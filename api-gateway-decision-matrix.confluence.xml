@@ -580,5 +580,802 @@
   </ac:rich-text-body>
 </ac:structured-macro>
 
+<h1>Barclays Live Proxy Requirements Mapping</h1>
+
+<ac:structured-macro ac:name="info">
+  <ac:rich-text-body>
+    <p>This section maps the existing Barclays Live Proxy authentication and routing flow requirements to API Gateway candidates. Requirements extracted from BCLCORESRV-6305 sequence diagram and Proxy Criteria documentation.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>BL-1. Authentication &amp; SSO Integration</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>AUTH-01: SSO Redirect (Server SSO URL)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>AUTH-02: Kerberos Authentication</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">1</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>AUTH-03: Cookie Creation &amp; Session Mgmt</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>AUTH-04: Session Inactivity Timeout (per URL)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>AUTH-05: URI Auth Mode (multiple levels)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>AUTH-06: Terms of Use Enforcement</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>BL-2. Entitlement &amp; Access Control</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>ENT-01: Site Audience Validation</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>ENT-02: Target Accessibility Check</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>ENT-03: Login Process Check (shouldRunNil)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>ENT-04: HTTP Method Allow/Deny per Route</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>ENT-05: User-Specific Host/Port Override</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>BL-3. CP Routing &amp; Request Handling</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>RTE-01: Target ID/CPID Resolution</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RTE-02: Alias Resolution (AliasServlet)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RTE-03: Context Root &amp; Internal Routes</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RTE-04: CP Server Discovery (ProxyMap)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RTE-05: Dynamic Host/Port Derivation</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RTE-06: Scan-Specific CP Routing</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>BL-4. Header &amp; Cookie Management</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>HDR-01: Custom Header Passthrough</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>HDR-02: Default Header Injection</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>HDR-03: Target-Specific Headers</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>HDR-04: Request Header Copy/Transform</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>HDR-05: Cookie Passthrough</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>HDR-06: Cookie Injection Before Proxy</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>BL-5. Protocol &amp; Connection Management</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>CONN-01: SSL/TLS &amp; Non-SSL Modes</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>CONN-02: HTTP Version Detection</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>CONN-03: Connection Pooling per CP</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>CONN-04: Long-Lived Connections (Flux/SSE)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>CONN-05: Per-CP Timeout Configuration</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>CONN-06: Long-Running Request Support</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>BL-6. Resilience &amp; Failover</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>RES-01: CP Failover (automatic)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RES-02: Health Check Validation</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RES-03: Failure Notification Actions</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>RES-04: Custom Error Page Management</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>BL-7. Rate Limiting &amp; Quotas</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>QTA-01: Max Thread Limits per CP</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>QTA-02: Quota Enforcement per CP</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>QTA-03: Thread Reservation from Pool</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>QTA-04: Connection Limits per CP</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>BL-8. Performance &amp; Observability</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>PERF-01: Low Latency Processing</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>PERF-02: CP Metadata Caching</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>OBS-01: User Activity Tracking</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>OBS-02: MIME Type Validation</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Barclays Live Proxy Score Summary</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Category</strong></p></th>
+      <th><p><strong>Max</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>BL-1: Auth &amp; SSO</p></td>
+      <td><p>30</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">27</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">29</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">27</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">21</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">16</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">27</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">21</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>BL-2: Entitlement</p></td>
+      <td><p>25</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">25</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">25</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">25</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">24</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">16</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">21</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>BL-3: CP Routing</p></td>
+      <td><p>30</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">29</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">27</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">19</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">29</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">27</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>BL-4: Header/Cookie</p></td>
+      <td><p>30</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">28</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">22</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">28</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>BL-5: Protocol/Conn</p></td>
+      <td><p>30</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">25</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">28</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">23</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">30</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>BL-6: Resilience</p></td>
+      <td><p>20</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">14</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">17</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">18</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">18</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">19</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">18</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>BL-7: Rate Limiting</p></td>
+      <td><p>20</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">19</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">11</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">16</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">19</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">17</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>BL-8: Perf &amp; Obs</p></td>
+      <td><p>20</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">19</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">18</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">17</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">14</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">20</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">17</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>TOTAL</strong></p></td>
+      <td><p><strong>205</strong></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">201 (98%)</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">183 (89%)</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">194 (95%)</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">199 (97%)</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">181 (88%)</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">145 (71%)</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">196 (96%)</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">181 (88%)</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Barclays Live Proxy Recommendation</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#38a169</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f0fff4</ac:parameter>
+  <ac:parameter ac:name="title">BL Proxy Recommendation: Apache APISIX</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Score: 201/205 (98%)</strong></p>
+    <ul>
+      <li>Best overall fit for Barclays Live Proxy requirements</li>
+      <li>Excellent Lua plugin system for custom EntitlementManager integration</li>
+      <li>Native support for dynamic upstream selection (CP Server routing)</li>
+      <li>Built-in support for SSO redirect flows and session management</li>
+      <li>Superior connection pooling and timeout configuration per route</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">BL Proxy Alternative: Kong Gateway</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Score: 199/205 (97%)</strong></p>
+    <ul>
+      <li>Mature plugin ecosystem for custom authentication flows</li>
+      <li>Enterprise support available for mission-critical deployments</li>
+      <li>Strong header/cookie manipulation capabilities</li>
+      <li>Consider if enterprise support contract is mandatory</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">BL Proxy Java Option: Spring Cloud Gateway</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Score: 194/205 (95%)</strong></p>
+    <ul>
+      <li>Best Kerberos support via Spring Security</li>
+      <li>Native Java integration with existing BL services</li>
+      <li>Easiest migration path from current Java-based proxy</li>
+      <li>WebFlux provides excellent reactive streaming support (Flux)</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="warning">
+  <ac:rich-text-body>
+    <p><strong>AWS API Gateway: NOT RECOMMENDED for BL Proxy (71%)</strong></p>
+    <p>Key gaps: Limited Kerberos support, inflexible session management, 29-second timeout limit incompatible with long-running requests, limited custom authentication flows.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
 <hr />
-<p style="text-align: center;"><em>Document Version: 1.0 | Generated: January 2026 | Review Schedule: Quarterly</em></p>
+<p style="text-align: center;"><em>Document Version: 1.1 | Generated: January 2026 | Review Schedule: Quarterly</em></p>
