@@ -1,0 +1,584 @@
+<ac:structured-macro ac:name="toc">
+  <ac:parameter ac:name="printable">true</ac:parameter>
+  <ac:parameter ac:name="maxLevel">3</ac:parameter>
+</ac:structured-macro>
+
+<h1>API Gateway Decision Matrix</h1>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="bgColor">#f7fafc</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Document Version:</strong> 1.0</p>
+    <p><strong>Evaluation Date:</strong> January 2026</p>
+    <p><strong>Purpose:</strong> Comprehensive evaluation of API Gateway solutions for enterprise deployment on AWS EKS</p>
+    <p><strong>Scope:</strong> 8 candidates evaluated across 30 requirement categories</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>Candidates Evaluated</h2>
+<table data-layout="default">
+  <colgroup><col style="width: 170px;" /><col style="width: 140px;" /><col style="width: 160px;" /><col style="width: 150px;" /></colgroup>
+  <thead>
+    <tr>
+      <th><p><strong>Candidate</strong></p></th>
+      <th><p><strong>Type</strong></p></th>
+      <th><p><strong>License</strong></p></th>
+      <th><p><strong>Core Technology</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Apache APISIX</p></td><td><p>API Gateway</p></td><td><p>Apache 2.0</p></td><td><p>NGINX + LuaJIT</p></td></tr>
+    <tr><td><p>NGINX + Node.js Custom</p></td><td><p>Homebrew</p></td><td><p>Mixed</p></td><td><p>NGINX + Node.js</p></td></tr>
+    <tr><td><p>Spring Cloud Gateway</p></td><td><p>API Gateway</p></td><td><p>Apache 2.0</p></td><td><p>Spring WebFlux</p></td></tr>
+    <tr><td><p>Kong Gateway</p></td><td><p>API Gateway</p></td><td><p>Apache 2.0 / Enterprise</p></td><td><p>NGINX + Lua</p></td></tr>
+    <tr><td><p>Envoy Gateway</p></td><td><p>API Gateway</p></td><td><p>Apache 2.0</p></td><td><p>Envoy Proxy</p></td></tr>
+    <tr><td><p>AWS API Gateway</p></td><td><p>Managed Service</p></td><td><p>AWS Commercial</p></td><td><p>AWS Native</p></td></tr>
+    <tr><td><p>NGINX Plus/Ingress</p></td><td><p>Ingress Controller</p></td><td><p>Commercial</p></td><td><p>NGINX</p></td></tr>
+    <tr><td><p>Istio Ingress Gateway</p></td><td><p>Service Mesh</p></td><td><p>Apache 2.0</p></td><td><p>Envoy Proxy</p></td></tr>
+  </tbody>
+</table>
+
+<h2>Scoring Legend</h2>
+<table data-layout="default">
+  <colgroup><col style="width: 80px;" /><col style="width: 300px;" /></colgroup>
+  <thead>
+    <tr><th><p><strong>Score</strong></p></th><th><p><strong>Meaning</strong></p></th></tr>
+  </thead>
+  <tbody>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p>Excellent / Native support</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p>Good / Minor gaps</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p>Adequate</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p>Basic / Significant work required</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">1</ac:parameter></ac:structured-macro></p></td><td><p>Poor / Major limitations</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">0</ac:parameter></ac:structured-macro></p></td><td><p>Not supported</p></td></tr>
+  </tbody>
+</table>
+
+<h2>1. Core Performance &amp; CDN</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>Solid Performance (latency/throughput)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>CDN Compatibility (CloudFront/Akamai)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>Caching/Offload Strategy</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>HTTP/2 &amp; HTTP/3 Support</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>WebSocket/SSE/gRPC Support</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>Connection Pooling</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Header Mutations &amp; Routing</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>Request Header Mutation</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>Response Header Mutation</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>Dynamic Header Logic (conditional)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>Site/Audience Routing (host/path)</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>Geo-based Routing</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>Segment-based Routing</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>URL Rewrites &amp; Redirects</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. Session &amp; Authentication</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Session Management</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Cookie Management</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>JWT/OIDC Validation</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>JWK Rotation Support</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>mTLS Support</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>API Keys Management</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>External Auth (OPA/ext-authz)</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<h2>4. Rate Limiting &amp; Resiliency</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Rate Limiting</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Circuit Breakers</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Health Checks (active/passive)</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<h2>5. Kubernetes &amp; AWS Integration</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>K8s-native Deployment (EKS)</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>GitOps-friendly Config (CRDs)</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Gateway API Support</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">0</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">0</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>AWS IAM/OIDC Integration</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>CloudWatch/OpenTelemetry</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<h2>6. Plugin Ecosystem &amp; Extensibility</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Built-in Plugin Ecosystem</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">1</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Node.js Plugin Support</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Java Plugin Support</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Hot Reload (config)</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Admin Dashboard/UI</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<h2>7. Enterprise &amp; Licensing</h2>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Requirement</strong></p></th>
+      <th><p><strong>APISIX</strong></p></th>
+      <th><p><strong>NGINX+Node</strong></p></th>
+      <th><p><strong>Spring GW</strong></p></th>
+      <th><p><strong>Kong</strong></p></th>
+      <th><p><strong>Envoy GW</strong></p></th>
+      <th><p><strong>AWS APIGW</strong></p></th>
+      <th><p><strong>NGINX Plus</strong></p></th>
+      <th><p><strong>Istio</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>License Cost (lower=better)</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Enterprise Support Available</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">1</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Vendor Support SLAs</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">0</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Community Size</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>Overall Scores Summary</h2>
+<ac:structured-macro ac:name="info">
+  <ac:rich-text-body>
+    <p><strong>Note:</strong> Scores calculated across all 88 requirement criteria. Maximum possible score: 440 (88 x 5)</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<table data-layout="default">
+  <colgroup><col style="width: 60px;" /><col style="width: 180px;" /><col style="width: 80px;" /><col style="width: 60px;" /><col style="width: 200px;" /></colgroup>
+  <thead>
+    <tr>
+      <th><p><strong>Rank</strong></p></th>
+      <th><p><strong>Solution</strong></p></th>
+      <th><p><strong>Score</strong></p></th>
+      <th><p><strong>%</strong></p></th>
+      <th><p><strong>Recommendation</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>1</p></td><td><p><strong>Apache APISIX</strong></p></td><td><p>403</p></td><td><p>92%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">STRONGLY RECOMMENDED</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>2</p></td><td><p><strong>Kong Gateway</strong></p></td><td><p>401</p></td><td><p>91%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">STRONGLY RECOMMENDED</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>3</p></td><td><p><strong>Istio Ingress Gateway</strong></p></td><td><p>389</p></td><td><p>88%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">RECOMMENDED</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>4</p></td><td><p><strong>Envoy Gateway</strong></p></td><td><p>378</p></td><td><p>86%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">RECOMMENDED</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>5</p></td><td><p><strong>Spring Cloud Gateway</strong></p></td><td><p>375</p></td><td><p>85%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">SUITABLE</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>6</p></td><td><p><strong>NGINX Plus/Ingress</strong></p></td><td><p>371</p></td><td><p>84%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">SUITABLE</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>7</p></td><td><p><strong>AWS API Gateway</strong></p></td><td><p>353</p></td><td><p>80%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">LIMITED FIT</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>8</p></td><td><p><strong>NGINX + Node.js Custom</strong></p></td><td><p>287</p></td><td><p>65%</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">NOT RECOMMENDED</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>Recommendations by Use Case</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#38a169</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f0fff4</ac:parameter>
+  <ac:parameter ac:name="title">Best for AWS + EKS Native Deployment</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Winner: Apache APISIX</strong></p>
+    <ul>
+      <li>Native Kubernetes CRDs and Ingress Controller</li>
+      <li>Excellent Helm chart with production-ready defaults</li>
+      <li>Hot reload without downtime via etcd/Admin API</li>
+      <li>80+ built-in plugins covering all requirements</li>
+    </ul>
+    <p><strong>Runner-up:</strong> Kong Gateway (more mature enterprise ecosystem, higher cost for enterprise features)</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">Best for Enterprise Auth &amp; Entitlements</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Winner: Spring Cloud Gateway</strong></p>
+    <ul>
+      <li>Native Spring Security with OIDC/SAML support</li>
+      <li>Deep Java ecosystem integration (familiar to enterprise teams)</li>
+      <li>Excellent for complex authorization logic</li>
+      <li>Best choice if team has strong Java/Spring expertise</li>
+    </ul>
+    <p><strong>Runner-up:</strong> Kong Enterprise (dedicated OIDC plugin, 24/7 support)</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">Best for High Throughput / Low Latency</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Winner: Apache APISIX</strong></p>
+    <ul>
+      <li>NGINX + LuaJIT core delivers sub-millisecond latency overhead</li>
+      <li>Benchmarks show 10x+ performance vs Java-based gateways</li>
+      <li>Excellent connection pooling and HTTP/2/3 support</li>
+    </ul>
+    <p><strong>Runner-up:</strong> Envoy Gateway (proven at Google/Lyft scale, slightly higher complexity)</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">Best for Lowest Operational Risk</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Winner: Kong Enterprise</strong></p>
+    <ul>
+      <li>24/7 enterprise support with SLAs</li>
+      <li>Most extensive documentation and training resources</li>
+      <li>Proven track record at Fortune 500 companies</li>
+      <li>Enterprise dashboard with RBAC</li>
+    </ul>
+    <p><strong>Runner-up:</strong> AWS API Gateway (fully managed, zero infrastructure, but limited customization)</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr />
+
+<h2>Homebrew vs Off-the-Shelf Analysis</h2>
+
+<ac:structured-macro ac:name="warning">
+  <ac:rich-text-body>
+    <p><strong>NGINX + Node.js Custom Gateway: NOT RECOMMENDED</strong></p>
+    <p>Building a custom gateway requires significant ongoing investment with limited return.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<table data-layout="default">
+  <colgroup><col style="width: 200px;" /><col style="width: 200px;" /><col style="width: 200px;" /></colgroup>
+  <thead>
+    <tr>
+      <th><p><strong>Factor</strong></p></th>
+      <th><p><strong>Homebrew (NGINX+Node)</strong></p></th>
+      <th><p><strong>Off-the-Shelf (APISIX/Kong)</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Initial Development Time</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">6-12 months</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">2-4 weeks</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Feature Completeness</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">~40% of requirements</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">~95% of requirements</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Ongoing Maintenance</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">2-3 FTEs dedicated</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">0.25-0.5 FTE</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Security Patches</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">Self-managed (risk)</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Community/Vendor</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Knowledge Transfer</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">High risk (tribal)</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Low risk (standard)</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Total 3-Year TCO</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">$600K-$1M+</ac:parameter></ac:structured-macro></p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">$50K-$200K</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<h3>Operational Risks of Homebrew</h3>
+<ac:structured-macro ac:name="note">
+  <ac:parameter ac:name="title">Key Risks</ac:parameter>
+  <ac:rich-text-body>
+    <ul>
+      <li><strong>Security debt:</strong> CVEs require custom patching</li>
+      <li><strong>Bus factor:</strong> Original developers leave, knowledge is lost</li>
+      <li><strong>Feature lag:</strong> Always catching up to industry standards</li>
+      <li><strong>Testing burden:</strong> Must validate every edge case yourself</li>
+      <li><strong>Compliance:</strong> Self-attestation for SOC2/PCI audits</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr />
+
+<h2>Implementation Timeline Estimates</h2>
+<table data-layout="default">
+  <colgroup><col style="width: 180px;" /><col style="width: 100px;" /><col style="width: 100px;" /><col style="width: 100px;" /><col style="width: 100px;" /></colgroup>
+  <thead>
+    <tr>
+      <th><p><strong>Solution</strong></p></th>
+      <th><p><strong>POC</strong></p></th>
+      <th><p><strong>Dev/Test</strong></p></th>
+      <th><p><strong>Production</strong></p></th>
+      <th><p><strong>Total</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Apache APISIX</p></td><td><p>1 week</p></td><td><p>2-3 weeks</p></td><td><p>1-2 weeks</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4-6 weeks</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Kong Gateway</p></td><td><p>1 week</p></td><td><p>2-3 weeks</p></td><td><p>1-2 weeks</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4-6 weeks</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Spring Cloud Gateway</p></td><td><p>1-2 weeks</p></td><td><p>3-4 weeks</p></td><td><p>2 weeks</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">6-8 weeks</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Envoy Gateway</p></td><td><p>1-2 weeks</p></td><td><p>3-4 weeks</p></td><td><p>2 weeks</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">6-8 weeks</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>Istio Ingress</p></td><td><p>2 weeks</p></td><td><p>4-6 weeks</p></td><td><p>2-3 weeks</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">8-11 weeks</ac:parameter></ac:structured-macro></p></td></tr>
+    <tr><td><p>NGINX + Node Custom</p></td><td><p>4-6 weeks</p></td><td><p>4-6 months</p></td><td><p>2-3 months</p></td><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">8-12 months</ac:parameter></ac:structured-macro></p></td></tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2>Final Recommendations</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#38a169</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f0fff4</ac:parameter>
+  <ac:parameter ac:name="title">Primary Recommendation: Apache APISIX</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Score: 403/440 (92%)</strong></p>
+    <ul>
+      <li>Best overall balance of features, performance, and operational simplicity</li>
+      <li>Native Kubernetes support with mature CRDs</li>
+      <li>80+ built-in plugins covering all requirements</li>
+      <li>Lua scripting for custom logic without recompilation</li>
+      <li>Active Apache Foundation governance</li>
+      <li>Zero license cost, enterprise support available</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">Secondary Recommendation: Kong Gateway</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Score: 401/440 (91%)</strong></p>
+    <ul>
+      <li>Most mature enterprise API gateway ecosystem</li>
+      <li>Extensive enterprise support options with SLAs</li>
+      <li>Largest plugin marketplace</li>
+      <li>Proven at Fortune 500 scale</li>
+      <li>Best choice if enterprise support contract is mandatory</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">Alternative for Java Teams: Spring Cloud Gateway</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Score: 375/440 (85%)</strong></p>
+    <ul>
+      <li>Best choice if team has strong Java/Spring expertise</li>
+      <li>Native Spring Security for enterprise auth integration</li>
+      <li>Excellent for existing Spring Boot microservices ecosystems</li>
+      <li>Consider if maintaining single-language stack is a priority</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr />
+<p style="text-align: center;"><em>Document Version: 1.0 | Generated: January 2026 | Review Schedule: Quarterly</em></p>
