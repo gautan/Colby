@@ -1,0 +1,1153 @@
+<ac:structured-macro ac:name="toc">
+  <ac:parameter ac:name="printable">true</ac:parameter>
+  <ac:parameter ac:name="maxLevel">3</ac:parameter>
+</ac:structured-macro>
+
+<h1>API Gateway POC Plan: APISIX vs Spring Cloud Gateway</h1>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="bgColor">#f7fafc</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Document Version:</strong> 1.0</p>
+    <p><strong>POC Duration:</strong> 3 Weeks</p>
+    <p><strong>Start Date:</strong> TBD</p>
+    <p><strong>Reference:</strong> BCLCORESRV-6305 Authentication and Proxy Flow</p>
+    <p><strong>Tracks:</strong> Apache APISIX | Spring Cloud Gateway</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>1. Executive Summary</h2>
+
+<p>This POC evaluates two API Gateway candidates for replacing the existing Barclays Live Proxy infrastructure. Both implementations will be measured against the same use case derived from the current authentication and proxy flow (BCLCORESRV-6305).</p>
+
+<ac:structured-macro ac:name="info">
+  <ac:rich-text-body>
+    <p><strong>POC Goal:</strong> Prove we can implement the full authentication + proxy + entitlement flow end-to-end with production-grade behavior and observability, then recommend APISIX vs Spring Cloud based on measured results.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>1.1 Candidates</h3>
+<table data-layout="default">
+  <thead>
+    <tr>
+      <th><p><strong>Aspect</strong></p></th>
+      <th><p><strong>Apache APISIX</strong></p></th>
+      <th><p><strong>Spring Cloud Gateway</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Core Technology</p></td><td><p>NGINX + LuaJIT</p></td><td><p>Spring WebFlux (Reactive)</p></td></tr>
+    <tr><td><p>Language</p></td><td><p>Lua plugins</p></td><td><p>Java/Kotlin</p></td></tr>
+    <tr><td><p>Config Model</p></td><td><p>etcd + Admin API + CRDs</p></td><td><p>YAML + Java DSL</p></td></tr>
+    <tr><td><p>Team Expertise</p></td><td><p>Learning required</p></td><td><p>Existing Java skills</p></td></tr>
+    <tr><td><p>Decision Matrix Score</p></td><td><p>201/205 (98%)</p></td><td><p>194/205 (95%)</p></td></tr>
+  </tbody>
+</table>
+
+<h2>2. POC Scope &amp; Use Case</h2>
+
+<h3>2.1 Reference Flow (Must Implement)</h3>
+<p>Based on the BCLCORESRV-6305 sequence diagram, the POC must implement:</p>
+
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Phase</strong></p></th>
+      <th><p><strong>Steps</strong></p></th>
+      <th><p><strong>Components</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p><strong>1. Initial Request</strong></p></td>
+      <td><p>Client hits CP endpoint, Authorization check via Ping Service, Cookie creation and redirect</p></td>
+      <td><p>Gateway, Auth Plugin/Filter</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>2. Authentication</strong></p></td>
+      <td><p>Get target ID/CPID, SSO redirect (if Kerberos enabled), Terms of Use check, Alias resolution</p></td>
+      <td><p>SSO Integration, Session Manager</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>3. Entitlement</strong></p></td>
+      <td><p>isUserActivity check, shouldRunNil check, Site Audience validation, Target accessibility, URI Auth Mode</p></td>
+      <td><p>EntitlementManager Service</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>4. CP Resolution</strong></p></td>
+      <td><p>Get CP server details (Host, Port), Check failover, Derive/Override Host:Port, Long-running query check</p></td>
+      <td><p>ProxyMap, CPCache</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>5. Request Mutation</strong></p></td>
+      <td><p>Copy headers, Set target-specific headers, Set common headers, Set cookies</p></td>
+      <td><p>Header Transformer</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>6. Proxy &amp; Response</strong></p></td>
+      <td><p>Proxy call to CP server, Handle response, Send response to client</p></td>
+      <td><p>Upstream Handler</p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2.2 State Diagram</h3>
+
+<ac:structured-macro ac:name="plantuml">
+  <ac:parameter ac:name="atlassian-macro-output-type">INLINE</ac:parameter>
+  <ac:plain-text-body><![CDATA[@startuml
+skinparam backgroundColor #FEFEFE
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2C5282
+  FontColor #1A202C
+  ArrowColor #2C5282
+}
+
+skinparam state<<error>> {
+  BackgroundColor #FED7D7
+  BorderColor #C53030
+}
+
+skinparam state<<success>> {
+  BackgroundColor #C6F6D5
+  BorderColor #276749
+}
+
+[*] --> RequestReceived
+
+state "Request Received" as RequestReceived {
+  RequestReceived : Client hits any CP
+  RequestReceived : Extract request URI, headers
+}
+
+RequestReceived --> AuthCheck : Parse request
+
+state "Auth Check" as AuthCheck {
+  AuthCheck : Check session cookie
+  AuthCheck : Validate token/session
+}
+
+AuthCheck --> SSORedirect : No valid session
+AuthCheck --> TargetResolution : Valid session
+
+state "SSO Redirect" as SSORedirect {
+  SSORedirect : Redirect to PingFederate
+  SSORedirect : Kerberos/OIDC flow
+}
+
+SSORedirect --> AuthCallback : Auth success
+SSORedirect --> AuthFailed<<error>> : Auth failed
+
+state "Auth Failed" as AuthFailed<<error>> {
+  AuthFailed : Return 401/403
+  AuthFailed : Log auth failure
+}
+
+AuthFailed --> [*]
+
+state "Auth Callback" as AuthCallback {
+  AuthCallback : Validate callback
+  AuthCallback : Create session cookie
+  AuthCallback : Store in Redis
+}
+
+AuthCallback --> TermsOfUseCheck
+
+state "Terms of Use Check" as TermsOfUseCheck {
+  TermsOfUseCheck : Check ToU acceptance
+}
+
+TermsOfUseCheck --> ToURequired : Not accepted
+TermsOfUseCheck --> TargetResolution : Accepted
+
+state "ToU Required" as ToURequired {
+  ToURequired : Redirect to ToU page
+}
+
+ToURequired --> TargetResolution : ToU accepted
+
+state "Target Resolution" as TargetResolution {
+  TargetResolution : Get target ID/CPID
+  TargetResolution : Resolve alias if needed
+}
+
+TargetResolution --> EntitlementCheck
+
+state "Entitlement Check" as EntitlementCheck {
+  state "User Activity Check" as UserActivity
+  state "Site Audience Check" as SiteAudience
+  state "Target Accessible" as TargetAccessible
+  state "URI Auth Mode" as URIAuthMode
+  state "Session Inactivity" as SessionInactivity
+
+  UserActivity --> SiteAudience
+  SiteAudience --> TargetAccessible
+  TargetAccessible --> URIAuthMode
+  URIAuthMode --> SessionInactivity
+}
+
+EntitlementCheck --> EntitlementDenied<<error>> : Not entitled
+EntitlementCheck --> CPResolution : Entitled
+
+state "Entitlement Denied" as EntitlementDenied<<error>> {
+  EntitlementDenied : Return 403 Forbidden
+  EntitlementDenied : Log denial reason
+}
+
+EntitlementDenied --> [*]
+
+state "CP Resolution" as CPResolution {
+  state "Get CP Details" as GetCPDetails {
+    GetCPDetails : Query ProxyMap/CPCache
+    GetCPDetails : Get Host, Port
+  }
+  state "Check Quota" as CheckQuota {
+    CheckQuota : MaxThread limit
+    CheckQuota : Max connections
+  }
+  state "Check Failover" as CheckFailover {
+    CheckFailover : Primary available?
+    CheckFailover : Select failover if needed
+  }
+  state "User Override" as UserOverride {
+    UserOverride : Check user-specific CP
+    UserOverride : Override Host:Port
+  }
+
+  GetCPDetails --> CheckQuota
+  CheckQuota --> CheckFailover
+  CheckFailover --> UserOverride
+}
+
+CPResolution --> QuotaExceeded<<error>> : Over limit
+CPResolution --> RequestMutation : Within limits
+
+state "Quota Exceeded" as QuotaExceeded<<error>> {
+  QuotaExceeded : Return 429 Too Many Requests
+  QuotaExceeded : Set Retry-After header
+}
+
+QuotaExceeded --> [*]
+
+state "Request Mutation" as RequestMutation {
+  RequestMutation : Copy/transform headers
+  RequestMutation : Set target-specific headers
+  RequestMutation : Set common headers
+  RequestMutation : Set cookies
+  RequestMutation : Determine HTTP version
+}
+
+RequestMutation --> ProxyRequest
+
+state "Proxy Request" as ProxyRequest {
+  ProxyRequest : Send to CP server
+  ProxyRequest : Apply timeout
+}
+
+ProxyRequest --> CPUnavailable<<error>> : Connection failed
+ProxyRequest --> Timeout<<error>> : Timeout exceeded
+ProxyRequest --> ResponseReceived : Success
+
+state "CP Unavailable" as CPUnavailable<<error>> {
+  CPUnavailable : Check retry count
+}
+
+CPUnavailable --> RetryWithFailover : Retries remaining
+CPUnavailable --> ServiceUnavailable<<error>> : No retries left
+
+state "Retry With Failover" as RetryWithFailover {
+  RetryWithFailover : Select next CP
+  RetryWithFailover : Increment retry count
+}
+
+RetryWithFailover --> ProxyRequest
+
+state "Timeout" as Timeout<<error>> {
+  Timeout : Check if long-running allowed
+}
+
+Timeout --> ProxyRequest : Long-running allowed, retry
+Timeout --> GatewayTimeout<<error>> : Not allowed
+
+state "Gateway Timeout" as GatewayTimeout<<error>> {
+  GatewayTimeout : Return 504
+  GatewayTimeout : Log timeout details
+}
+
+GatewayTimeout --> [*]
+
+state "Service Unavailable" as ServiceUnavailable<<error>> {
+  ServiceUnavailable : Return 503
+  ServiceUnavailable : Circuit breaker open
+}
+
+ServiceUnavailable --> [*]
+
+state "Response Received" as ResponseReceived {
+  ResponseReceived : Process CP response
+  ResponseReceived : Transform response headers
+}
+
+ResponseReceived --> SendResponse<<success>>
+
+state "Send Response" as SendResponse<<success>> {
+  SendResponse : Return to client
+  SendResponse : Log request complete
+  SendResponse : Update metrics
+}
+
+SendResponse --> [*]
+
+@enduml]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<h3>2.3 Error States Summary</h3>
+<table data-layout="default">
+  <thead>
+    <tr>
+      <th><p><strong>Error State</strong></p></th>
+      <th><p><strong>HTTP Code</strong></p></th>
+      <th><p><strong>Trigger</strong></p></th>
+      <th><p><strong>Recovery</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Auth Failed</p></td><td><p>401/403</p></td><td><p>Invalid credentials, expired token</p></td><td><p>Re-authenticate</p></td></tr>
+    <tr><td><p>Entitlement Denied</p></td><td><p>403</p></td><td><p>User not entitled to CP</p></td><td><p>Request access</p></td></tr>
+    <tr><td><p>Quota Exceeded</p></td><td><p>429</p></td><td><p>Rate limit hit</p></td><td><p>Wait, retry after</p></td></tr>
+    <tr><td><p>CP Unavailable</p></td><td><p>503</p></td><td><p>All CPs down, circuit open</p></td><td><p>Failover, wait</p></td></tr>
+    <tr><td><p>Gateway Timeout</p></td><td><p>504</p></td><td><p>CP response timeout</p></td><td><p>Retry, check CP health</p></td></tr>
+  </tbody>
+</table>
+
+<h2>3. Week-by-Week Plan</h2>
+
+<h3>3.1 Week 1: Foundation &amp; Basic Routing</h3>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3182ce</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ebf8ff</ac:parameter>
+  <ac:parameter ac:name="title">Week 1 Objectives</ac:parameter>
+  <ac:rich-text-body>
+    <ul>
+      <li>Set up development environments for both tracks</li>
+      <li>Implement basic request routing and upstream proxying</li>
+      <li>Establish CI/CD pipelines and deployment to dev cluster</li>
+      <li>Implement header mutation and URL rewriting</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h4>APISIX Track - Week 1</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+      <th><p><strong>Status</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1-D2</p></td>
+      <td><p>Deploy APISIX on EKS with Helm</p></td>
+      <td><p>DevOps Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>APISIX running on dev EKS cluster</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>etcd cluster healthy (3 nodes)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Admin API accessible</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Dashboard deployed</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2-D3</p></td>
+      <td><p>Configure basic route to mock CP server</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Route /cp/* proxies to mock upstream</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Request reaches mock server</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Response returned to client</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D3-D4</p></td>
+      <td><p>Implement header mutation plugin</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Add X-BL-User-Id header</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Add X-BL-CP-Id header</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Remove sensitive headers</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Copy correlation ID</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D4</p></td>
+      <td><p>Implement URL rewrite rules</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>/api/v1/cp/{cpId}/* rewrites to CP context</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Alias URLs resolve correctly</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Dynamic upstream selection (Lua plugin)</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Custom Lua plugin extracts CPID</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Plugin queries mock ProxyMap</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Upstream selected dynamically</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Spring Cloud Gateway Track - Week 1</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+      <th><p><strong>Status</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1-D2</p></td>
+      <td><p>Bootstrap Spring Cloud Gateway project</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Spring Boot 3.x + Gateway starter</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Gradle/Maven build working</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Docker image builds</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Deployed to dev EKS</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2-D3</p></td>
+      <td><p>Configure basic route to mock CP server</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>RouteLocator configured for /cp/*</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Request proxied to mock upstream</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Response returned correctly</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D3-D4</p></td>
+      <td><p>Implement header mutation filter</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>AddRequestHeader filter working</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>RemoveRequestHeader filter working</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Custom GatewayFilter for dynamic headers</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D4</p></td>
+      <td><p>Implement URL rewrite filter</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>RewritePath filter configured</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>SetPath for alias resolution</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Dynamic upstream selection (Custom Filter)</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Custom GlobalFilter extracts CPID</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>ProxyMapService bean queries mock data</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Route URI modified dynamically</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Shared Tasks - Week 1</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Deploy mock CP servers (3 instances)</p></td>
+      <td><p>QA Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>3 mock CP servers running on EKS</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Each returns identifiable responses</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Configurable latency/error injection</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Deploy mock EntitlementManager service</p></td>
+      <td><p>QA Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>REST API for entitlement checks</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Configurable allow/deny responses</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D2</p></td>
+      <td><p>Set up observability stack</p></td>
+      <td><p>DevOps Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Prometheus + Grafana deployed</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Jaeger for distributed tracing</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>ELK/Loki for logs</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Week 1 Demo &amp; Review</p></td>
+      <td><p>Tech Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Both gateways route to mock CPs</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Header mutations verified</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Initial latency measurements captured</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 Week 2: Authentication, Entitlement &amp; Resilience</h3>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#38a169</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f0fff4</ac:parameter>
+  <ac:parameter ac:name="title">Week 2 Objectives</ac:parameter>
+  <ac:rich-text-body>
+    <ul>
+      <li>Implement SSO/OAuth integration with mock PingFederate</li>
+      <li>Implement entitlement validation flow</li>
+      <li>Add rate limiting, circuit breakers, and retry logic</li>
+      <li>Implement session management with Redis</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h4>APISIX Track - Week 2</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+      <th><p><strong>Status</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1-D2</p></td>
+      <td><p>Configure openid-connect plugin</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Plugin connects to mock PingFederate</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Unauthenticated requests redirect to /authorize</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Callback validates tokens</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Session cookie created</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2-D3</p></td>
+      <td><p>Implement entitlement check plugin (Lua)</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Plugin calls EntitlementManager API</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Checks: isEntitledToCP, isAccessible</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Returns 403 if not entitled</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Caches entitlement results (60s TTL)</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D3</p></td>
+      <td><p>Configure limit-count plugin (rate limiting)</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Rate limit per user (100 req/min)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Rate limit per CP (1000 req/min)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Returns 429 with Retry-After header</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Redis backend for distributed counting</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D4</p></td>
+      <td><p>Configure circuit breaker (api-breaker plugin)</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Circuit opens after 5 failures</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Half-open after 30s</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Returns 503 when open</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D4-D5</p></td>
+      <td><p>Configure retry and timeout</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>3 retries with exponential backoff</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Per-route timeout (30s default, 120s for long-running)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Failover to secondary CP on failure</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Session inactivity check</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Redis stores session with TTL</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Inactivity timeout per URL configurable</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Expired session triggers re-auth</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Spring Cloud Gateway Track - Week 2</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+      <th><p><strong>Status</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1-D2</p></td>
+      <td><p>Integrate Spring Security OAuth2</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>spring-boot-starter-oauth2-client configured</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Mock PingFederate as authorization server</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>OAuth2 login flow works</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Token relay to downstream services</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2-D3</p></td>
+      <td><p>Implement EntitlementFilter (custom)</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>GatewayFilter calls EntitlementManager</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>WebClient with reactive calls</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Caffeine cache for entitlements</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Returns 403 Mono.error if denied</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D3</p></td>
+      <td><p>Configure RequestRateLimiter filter</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Redis rate limiter configured</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>KeyResolver for user-based limiting</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>KeyResolver for CP-based limiting</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>429 response with headers</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D4</p></td>
+      <td><p>Integrate Resilience4j circuit breaker</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>CircuitBreaker filter per route</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Fallback returns 503</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Metrics exposed to Prometheus</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D4-D5</p></td>
+      <td><p>Configure retry and timeout</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Retry filter with 3 attempts</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Timeout configurable per route</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>LoadBalancer for CP failover</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Spring Session with Redis</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>spring-session-data-redis configured</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Session timeout configurable</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Inactivity check per request</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Shared Tasks - Week 2</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Deploy mock PingFederate (Keycloak)</p></td>
+      <td><p>DevOps Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Keycloak running as mock IdP</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>OIDC endpoints available</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Test users created</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Deploy Redis cluster</p></td>
+      <td><p>DevOps Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Redis Cluster (3 masters, 3 replicas)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Both gateways can connect</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D3</p></td>
+      <td><p>Create chaos testing scripts</p></td>
+      <td><p>QA Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Script to kill CP pods</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Script to inject latency</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Script to simulate entitlement denial</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Week 2 Demo &amp; Review</p></td>
+      <td><p>Tech Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Auth flow demo (login → access)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Entitlement denial demo</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Rate limiting demo (429 response)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Circuit breaker demo (CP failure)</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.3 Week 3: Performance Testing, Observability &amp; Evaluation</h3>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#805ad5</ac:parameter>
+  <ac:parameter ac:name="bgColor">#faf5ff</ac:parameter>
+  <ac:parameter ac:name="title">Week 3 Objectives</ac:parameter>
+  <ac:rich-text-body>
+    <ul>
+      <li>Complete observability integration (metrics, logging, tracing)</li>
+      <li>Execute performance tests and capture benchmarks</li>
+      <li>Test operational scenarios (config change, rollback, hot reload)</li>
+      <li>Score both implementations and make recommendation</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h4>APISIX Track - Week 3</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+      <th><p><strong>Status</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Configure Prometheus metrics export</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>prometheus-plugin enabled</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Request count, latency, status metrics</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Grafana dashboard created</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Configure distributed tracing</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>zipkin or skywalking plugin enabled</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Trace ID propagated to upstream</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Spans visible in Jaeger</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2</p></td>
+      <td><p>Configure structured logging</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>http-logger or kafka-logger plugin</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>JSON format with correlation ID</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Logs searchable in Kibana/Loki</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2</p></td>
+      <td><p>Test hot reload configuration</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Route change via Admin API</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>No downtime during change</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Rollback tested</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D3-D4</p></td>
+      <td><p>Execute performance tests</p></td>
+      <td><p>QA Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Baseline: 1000 RPS for 10 min</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Stress: ramp to 5000 RPS</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Latency percentiles captured (p50, p95, p99)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Error rate &lt; 0.1% at 1000 RPS</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Document findings and score</p></td>
+      <td><p>Backend Dev 1</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Scoring rubric completed</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Pros/cons documented</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Known issues listed</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Spring Cloud Gateway Track - Week 3</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+      <th><p><strong>Status</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Configure Micrometer metrics</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>micrometer-registry-prometheus dependency</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>/actuator/prometheus endpoint exposed</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Gateway-specific metrics available</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Grafana dashboard created</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D1</p></td>
+      <td><p>Configure distributed tracing</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>micrometer-tracing + Zipkin exporter</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Trace context propagated</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Spans visible in Jaeger</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2</p></td>
+      <td><p>Configure structured logging</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Logback with JSON encoder</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>MDC with trace ID, user ID</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Logs to stdout (EKS picks up)</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D2</p></td>
+      <td><p>Test configuration refresh</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Spring Cloud Config Server integrated</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>/actuator/refresh triggers reload</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Route changes without restart</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D3-D4</p></td>
+      <td><p>Execute performance tests</p></td>
+      <td><p>QA Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Same test suite as APISIX</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>JVM tuning applied (heap, GC)</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Latency percentiles captured</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Error rate captured</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Document findings and score</p></td>
+      <td><p>Backend Dev 2</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Scoring rubric completed</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Pros/cons documented</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Known issues listed</ac:task-body></ac:task></ac:task-list></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">NOT STARTED</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Shared Tasks - Week 3</h4>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Day</strong></p></th>
+      <th><p><strong>Task</strong></p></th>
+      <th><p><strong>Owner</strong></p></th>
+      <th><p><strong>Acceptance Criteria</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>D1-D2</p></td>
+      <td><p>Create unified Grafana dashboard</p></td>
+      <td><p>DevOps Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Side-by-side comparison view</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Latency, throughput, error rate panels</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Resource utilization (CPU, memory)</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D3</p></td>
+      <td><p>Execute functional test suite</p></td>
+      <td><p>QA Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>All test cases pass on both gateways</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Test report generated</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D4</p></td>
+      <td><p>Execute chaos tests</p></td>
+      <td><p>QA Lead</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>CP failure handled gracefully</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Circuit breaker activates</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Failover works correctly</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+    <tr>
+      <td><p>D5</p></td>
+      <td><p>Final POC Review &amp; Recommendation</p></td>
+      <td><p>Tech Lead + Architect</p></td>
+      <td><p><ac:task-list><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Scoring complete for both</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Recommendation documented</ac:task-body></ac:task><ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body>Go/No-Go decision made</ac:task-body></ac:task></ac:task-list></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Test Plan</h2>
+
+<h3>4.1 Functional Test Cases</h3>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>TC ID</strong></p></th>
+      <th><p><strong>Category</strong></p></th>
+      <th><p><strong>Test Case</strong></p></th>
+      <th><p><strong>Expected Result</strong></p></th>
+      <th><p><strong>Priority</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>TC-001</p></td><td><p>Auth</p></td><td><p>Unauthenticated request to protected route</p></td><td><p>302 redirect to SSO</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-002</p></td><td><p>Auth</p></td><td><p>Valid token in Authorization header</p></td><td><p>Request proxied, 200 OK</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-003</p></td><td><p>Auth</p></td><td><p>Expired token</p></td><td><p>401 Unauthorized</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-004</p></td><td><p>Auth</p></td><td><p>Invalid token signature</p></td><td><p>401 Unauthorized</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-005</p></td><td><p>Entitlement</p></td><td><p>User entitled to CP</p></td><td><p>Request proxied, 200 OK</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-006</p></td><td><p>Entitlement</p></td><td><p>User not entitled to CP</p></td><td><p>403 Forbidden</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-007</p></td><td><p>Entitlement</p></td><td><p>EntitlementManager unavailable</p></td><td><p>503 or cached result used</p></td><td><p>P2</p></td></tr>
+    <tr><td><p>TC-008</p></td><td><p>Routing</p></td><td><p>Request to CP by ID</p></td><td><p>Routed to correct upstream</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-009</p></td><td><p>Routing</p></td><td><p>Request to CP by alias</p></td><td><p>Alias resolved, correct upstream</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-010</p></td><td><p>Routing</p></td><td><p>User-specific CP override</p></td><td><p>Override host/port used</p></td><td><p>P2</p></td></tr>
+    <tr><td><p>TC-011</p></td><td><p>Headers</p></td><td><p>Custom header added</p></td><td><p>X-BL-* headers present upstream</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-012</p></td><td><p>Headers</p></td><td><p>Sensitive header removed</p></td><td><p>Authorization not forwarded</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-013</p></td><td><p>Headers</p></td><td><p>Correlation ID propagated</p></td><td><p>Same X-Correlation-ID upstream</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-014</p></td><td><p>Rate Limit</p></td><td><p>Within rate limit</p></td><td><p>Request succeeds</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-015</p></td><td><p>Rate Limit</p></td><td><p>Exceed rate limit</p></td><td><p>429 with Retry-After</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-016</p></td><td><p>Resilience</p></td><td><p>Primary CP unavailable</p></td><td><p>Failover to secondary</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-017</p></td><td><p>Resilience</p></td><td><p>All CPs unavailable</p></td><td><p>503 Service Unavailable</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-018</p></td><td><p>Resilience</p></td><td><p>CP timeout</p></td><td><p>Retry then 504 if exhausted</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-019</p></td><td><p>Resilience</p></td><td><p>Circuit breaker open</p></td><td><p>503 without hitting CP</p></td><td><p>P1</p></td></tr>
+    <tr><td><p>TC-020</p></td><td><p>Session</p></td><td><p>Session timeout (inactivity)</p></td><td><p>Re-authentication triggered</p></td><td><p>P2</p></td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 Performance Test Plan</h3>
+<table data-layout="default">
+  <thead>
+    <tr>
+      <th><p><strong>Test Type</strong></p></th>
+      <th><p><strong>Parameters</strong></p></th>
+      <th><p><strong>Duration</strong></p></th>
+      <th><p><strong>Success Criteria</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p><strong>Baseline</strong></p></td>
+      <td><p>1000 RPS, 50 concurrent users</p></td>
+      <td><p>10 minutes</p></td>
+      <td><p>p99 &lt; 100ms, error rate &lt; 0.1%</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Load</strong></p></td>
+      <td><p>2500 RPS, 100 concurrent users</p></td>
+      <td><p>15 minutes</p></td>
+      <td><p>p99 &lt; 200ms, error rate &lt; 0.5%</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Stress</strong></p></td>
+      <td><p>Ramp 1000 → 5000 RPS</p></td>
+      <td><p>20 minutes</p></td>
+      <td><p>Identify breaking point, graceful degradation</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Endurance</strong></p></td>
+      <td><p>1500 RPS sustained</p></td>
+      <td><p>2 hours</p></td>
+      <td><p>No memory leaks, stable latency</p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Spike</strong></p></td>
+      <td><p>1000 → 4000 → 1000 RPS</p></td>
+      <td><p>10 minutes</p></td>
+      <td><p>Recovery within 30s after spike</p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>4.3 Operational Test Scenarios</h3>
+<table data-layout="default">
+  <thead>
+    <tr>
+      <th><p><strong>Scenario</strong></p></th>
+      <th><p><strong>Test Steps</strong></p></th>
+      <th><p><strong>Expected Behavior</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>Hot reload route config</p></td>
+      <td><p>1. Traffic running at 500 RPS<br/>2. Add new route via API/config<br/>3. Verify new route works</p></td>
+      <td><p>Zero downtime, no dropped requests</p></td>
+    </tr>
+    <tr>
+      <td><p>Rollback configuration</p></td>
+      <td><p>1. Apply bad configuration<br/>2. Observe failure<br/>3. Rollback to previous</p></td>
+      <td><p>Rollback completes &lt; 30s</p></td>
+    </tr>
+    <tr>
+      <td><p>Scale up gateway pods</p></td>
+      <td><p>1. Running 3 replicas<br/>2. Scale to 6 replicas<br/>3. Verify load distribution</p></td>
+      <td><p>Traffic distributed, no errors</p></td>
+    </tr>
+    <tr>
+      <td><p>Gateway pod failure</p></td>
+      <td><p>1. Kill one gateway pod<br/>2. Observe traffic handling</p></td>
+      <td><p>K8s restarts pod, traffic continues via other pods</p></td>
+    </tr>
+    <tr>
+      <td><p>etcd/Config store failure (APISIX)</p></td>
+      <td><p>1. Kill etcd leader<br/>2. Observe gateway behavior</p></td>
+      <td><p>Gateway continues with cached config</p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>5. Scoring Rubric</h2>
+
+<h3>5.1 Evaluation Criteria (0-5 Scale)</h3>
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Category</strong></p></th>
+      <th><p><strong>Weight</strong></p></th>
+      <th><p><strong>Criteria</strong></p></th>
+      <th><p><strong>APISIX Score</strong></p></th>
+      <th><p><strong>Spring GW Score</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p><strong>Performance</strong></p></td>
+      <td><p>25%</p></td>
+      <td><p>p99 latency, throughput, resource efficiency</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Functional Completeness</strong></p></td>
+      <td><p>20%</p></td>
+      <td><p>All test cases pass, no workarounds needed</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Resilience</strong></p></td>
+      <td><p>15%</p></td>
+      <td><p>Failover, circuit breaker, retry behavior</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Observability</strong></p></td>
+      <td><p>10%</p></td>
+      <td><p>Metrics, logging, tracing quality</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Operability</strong></p></td>
+      <td><p>10%</p></td>
+      <td><p>Hot reload, rollback, scaling ease</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Developer Experience</strong></p></td>
+      <td><p>10%</p></td>
+      <td><p>Ease of implementing custom logic, debugging</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>Team Readiness</strong></p></td>
+      <td><p>10%</p></td>
+      <td><p>Learning curve, existing expertise match</p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+    <tr>
+      <td><p><strong>TOTAL (Weighted)</strong></p></td>
+      <td><p>100%</p></td>
+      <td><p></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+      <td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Grey</ac:parameter><ac:parameter ac:name="title">TBD</ac:parameter></ac:structured-macro></p></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>5.2 Scoring Guide</h3>
+<table data-layout="default">
+  <thead>
+    <tr>
+      <th><p><strong>Score</strong></p></th>
+      <th><p><strong>Meaning</strong></p></th>
+      <th><p><strong>Description</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">5</ac:parameter></ac:structured-macro></p></td><td><p>Excellent</p></td><td><p>Exceeds requirements, production-ready as-is</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">4</ac:parameter></ac:structured-macro></p></td><td><p>Good</p></td><td><p>Meets requirements with minor polish needed</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">3</ac:parameter></ac:structured-macro></p></td><td><p>Adequate</p></td><td><p>Meets requirements but has notable gaps</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">2</ac:parameter></ac:structured-macro></p></td><td><p>Below Expectations</p></td><td><p>Significant work needed, workarounds required</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">1</ac:parameter></ac:structured-macro></p></td><td><p>Poor</p></td><td><p>Major issues, may not be viable</p></td></tr>
+    <tr><td><p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">0</ac:parameter></ac:structured-macro></p></td><td><p>Failed</p></td><td><p>Could not implement or complete failure</p></td></tr>
+  </tbody>
+</table>
+
+<h2>6. Go/No-Go Criteria</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#38a169</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f0fff4</ac:parameter>
+  <ac:parameter ac:name="title">GO Criteria (All Must Pass)</ac:parameter>
+  <ac:rich-text-body>
+    <ac:task-list>
+      <ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body><strong>Functional:</strong> All P1 test cases pass (100%)</ac:task-body></ac:task>
+      <ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body><strong>Performance:</strong> p99 latency &lt; 100ms at 1000 RPS baseline</ac:task-body></ac:task>
+      <ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body><strong>Resilience:</strong> Failover completes &lt; 5s, circuit breaker triggers correctly</ac:task-body></ac:task>
+      <ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body><strong>Observability:</strong> Metrics, logs, traces all functional</ac:task-body></ac:task>
+      <ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body><strong>Operations:</strong> Hot reload works with zero downtime</ac:task-body></ac:task>
+      <ac:task><ac:task-status>incomplete</ac:task-status><ac:task-body><strong>Security:</strong> Auth flow secure, no token leakage</ac:task-body></ac:task>
+    </ac:task-list>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#c53030</ac:parameter>
+  <ac:parameter ac:name="bgColor">#fff5f5</ac:parameter>
+  <ac:parameter ac:name="title">NO-GO Triggers (Any Fails POC)</ac:parameter>
+  <ac:rich-text-body>
+    <ul>
+      <li><strong>Blocker Bug:</strong> Critical functionality cannot be implemented</li>
+      <li><strong>Performance:</strong> p99 &gt; 500ms at baseline load</li>
+      <li><strong>Stability:</strong> Gateway crashes under normal load</li>
+      <li><strong>Memory Leak:</strong> Memory grows unbounded during endurance test</li>
+      <li><strong>Security:</strong> Token/credential exposure in logs or headers</li>
+      <li><strong>Vendor Lock-in:</strong> Critical feature requires proprietary extension</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>7. Team &amp; Resources</h2>
+
+<h3>7.1 POC Team</h3>
+<table data-layout="default">
+  <thead>
+    <tr>
+      <th><p><strong>Role</strong></p></th>
+      <th><p><strong>Name</strong></p></th>
+      <th><p><strong>Responsibility</strong></p></th>
+      <th><p><strong>Allocation</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>Tech Lead</p></td><td><p>TBD</p></td><td><p>Overall POC coordination, final decision</p></td><td><p>50%</p></td></tr>
+    <tr><td><p>Backend Dev 1</p></td><td><p>TBD</p></td><td><p>APISIX implementation</p></td><td><p>100%</p></td></tr>
+    <tr><td><p>Backend Dev 2</p></td><td><p>TBD</p></td><td><p>Spring Cloud Gateway implementation</p></td><td><p>100%</p></td></tr>
+    <tr><td><p>DevOps Lead</p></td><td><p>TBD</p></td><td><p>Infrastructure, CI/CD, observability</p></td><td><p>75%</p></td></tr>
+    <tr><td><p>QA Lead</p></td><td><p>TBD</p></td><td><p>Test planning, execution, mocks</p></td><td><p>75%</p></td></tr>
+    <tr><td><p>Architect</p></td><td><p>TBD</p></td><td><p>Design review, Go/No-Go decision</p></td><td><p>25%</p></td></tr>
+  </tbody>
+</table>
+
+<h3>7.2 Infrastructure Requirements</h3>
+<table data-layout="default">
+  <thead>
+    <tr>
+      <th><p><strong>Resource</strong></p></th>
+      <th><p><strong>Specification</strong></p></th>
+      <th><p><strong>Purpose</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><p>EKS Dev Cluster</p></td><td><p>3x m5.xlarge nodes</p></td><td><p>Gateway + mocks deployment</p></td></tr>
+    <tr><td><p>Redis Cluster</p></td><td><p>ElastiCache, 3 nodes</p></td><td><p>Session, rate limiting, caching</p></td></tr>
+    <tr><td><p>etcd Cluster</p></td><td><p>3 nodes (for APISIX)</p></td><td><p>APISIX configuration store</p></td></tr>
+    <tr><td><p>Prometheus + Grafana</p></td><td><p>Managed or self-hosted</p></td><td><p>Metrics and dashboards</p></td></tr>
+    <tr><td><p>Jaeger</p></td><td><p>Single node</p></td><td><p>Distributed tracing</p></td></tr>
+    <tr><td><p>Load Generator</p></td><td><p>k6 or Gatling on dedicated node</p></td><td><p>Performance testing</p></td></tr>
+  </tbody>
+</table>
+
+<h2>8. Risks &amp; Mitigations</h2>
+
+<table data-layout="wide">
+  <thead>
+    <tr>
+      <th><p><strong>Risk</strong></p></th>
+      <th><p><strong>Impact</strong></p></th>
+      <th><p><strong>Probability</strong></p></th>
+      <th><p><strong>Mitigation</strong></p></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><p>Lua learning curve (APISIX)</p></td>
+      <td><p>Medium</p></td>
+      <td><p>High</p></td>
+      <td><p>Allocate extra time, use existing plugins where possible</p></td>
+    </tr>
+    <tr>
+      <td><p>Spring WebFlux complexity</p></td>
+      <td><p>Medium</p></td>
+      <td><p>Medium</p></td>
+      <td><p>Team has Java experience, reactive patterns documented</p></td>
+    </tr>
+    <tr>
+      <td><p>Mock services don't reflect production</p></td>
+      <td><p>High</p></td>
+      <td><p>Medium</p></td>
+      <td><p>Design mocks based on production API contracts</p></td>
+    </tr>
+    <tr>
+      <td><p>Infrastructure delays</p></td>
+      <td><p>High</p></td>
+      <td><p>Low</p></td>
+      <td><p>Pre-provision infrastructure before Week 1</p></td>
+    </tr>
+    <tr>
+      <td><p>Performance test environment not representative</p></td>
+      <td><p>Medium</p></td>
+      <td><p>Medium</p></td>
+      <td><p>Document test environment specs, note as caveat</p></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+<p style="text-align: center;"><em>Document Version: 1.0 | Created: January 2026 | POC Duration: 3 Weeks</em></p>
