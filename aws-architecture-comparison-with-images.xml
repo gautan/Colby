@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ac:confluence SYSTEM "confluence.dtd">
+<ac:confluence xmlns:ac="http://www.atlassian.com/schema/confluence/4/ac/" xmlns:ri="http://www.atlassian.com/schema/confluence/4/ri/">
+
+<!-- ============================================== -->
+<!-- AWS Architecture Comparison - With Images      -->
+<!-- ============================================== -->
+
+<ac:structured-macro ac:name="info">
+  <ac:parameter ac:name="title">AWS Architecture Comparison</ac:parameter>
+  <ac:parameter ac:name="icon">true</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Route53 → API Gateway</strong> vs <strong>Route53 → ALB → Spring Cloud Gateway</strong></p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- Table of Contents -->
+<ac:structured-macro ac:name="toc">
+  <ac:parameter ac:name="printable">true</ac:parameter>
+  <ac:parameter ac:name="style">square</ac:parameter>
+  <ac:parameter ac:name="maxLevel">3</ac:parameter>
+  <ac:parameter ac:name="minLevel">2</ac:parameter>
+  <ac:parameter ac:name="type">list</ac:parameter>
+  <ac:parameter ac:name="outline">true</ac:parameter>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Overview -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="warning"/> Overview</h1>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Document Purpose</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#ccc</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#F7D6C1</ac:parameter>
+  <ac:parameter ac:name="bgColor">#FFFFCE</ac:parameter>
+  <ac:rich-text-body>
+    <p>This document compares two AWS architecture patterns for API routing and provides recommendations for regional failover strategies.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Architecture Diagrams -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="plus"/> Architecture Diagrams</h1>
+
+<h2>Option 1: API Gateway + VPC Link</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Architecture Diagram</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#3572b0</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#e4f0f6</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f0f9ff</ac:parameter>
+  <ac:rich-text-body>
+    <p>
+      <ac:image ac:align="center" ac:width="800" ac:border="true">
+        <ri:attachment ri:filename="01-api-gateway-architecture.png"/>
+      </ac:image>
+    </p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Components</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#59afe1</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#deebff</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ffffff</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">Users</ac:parameter></ac:structured-macro></td>
+          <td>End users accessing the application</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Route 53</ac:parameter></ac:structured-macro></td>
+          <td>DNS routing and health checks</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">API Gateway</ac:parameter></ac:structured-macro></td>
+          <td>HTTP API (regional endpoint)</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Orange</ac:parameter><ac:parameter ac:name="title">NLB</ac:parameter></ac:structured-macro></td>
+          <td>Network Load Balancer (VPC Link target)</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">EKS Pods</ac:parameter></ac:structured-macro></td>
+          <td>Kubernetes microservices</td>
+        </tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<h2>Option 2: ALB + Spring Cloud Gateway</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Architecture Diagram</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#36b37e</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#e3fcef</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f4fff8</ac:parameter>
+  <ac:rich-text-body>
+    <p>
+      <ac:image ac:align="center" ac:width="800" ac:border="true">
+        <ri:attachment ri:filename="02-spring-cloud-gateway-architecture.png"/>
+      </ac:image>
+    </p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Components</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#59afe1</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#deebff</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ffffff</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">Users</ac:parameter></ac:structured-macro></td>
+          <td>End users accessing the application</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Route 53</ac:parameter></ac:structured-macro></td>
+          <td>DNS routing and health checks</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">ALB</ac:parameter></ac:structured-macro></td>
+          <td>Application Load Balancer (public)</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Orange</ac:parameter><ac:parameter ac:name="title">Spring Cloud GW</ac:parameter></ac:structured-macro></td>
+          <td>API Gateway in EKS (2+ replicas)</td>
+        </tr>
+        <tr>
+          <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">EKS Backend</ac:parameter></ac:structured-macro></td>
+          <td>Microservices + Lambda (optional)</td>
+        </tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Component Comparison -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="question"/> Component Comparison</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Aspect</th>
+      <th>API Gateway + VPC Link</th>
+      <th>ALB + Spring Cloud Gateway</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Components</strong></td>
+      <td>2 (APIGW, VPC Link)</td>
+      <td>3 (ALB, SCG, VPC Link)</td>
+    </tr>
+    <tr>
+      <td><strong>Managed Services</strong></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Fully managed</ac:parameter></ac:structured-macro></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">ALB managed, SCG self-managed</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>Operational Overhead</strong></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Low</ac:parameter></ac:structured-macro></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">Medium</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>Infrastructure as Code</strong></td>
+      <td>Simple (fewer resources)</td>
+      <td>More complex</td>
+    </tr>
+    <tr>
+      <td><strong>Team Skills Required</strong></td>
+      <td>AWS knowledge</td>
+      <td>AWS + Java + K8s + Spring</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Cost Analysis -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="minus"/> Cost Analysis</h1>
+
+<h2>Per-Request Pricing</h2>
+
+<ac:structured-macro ac:name="section">
+  <ac:rich-text-body>
+    <ac:structured-macro ac:name="column">
+      <ac:parameter ac:name="width">50%</ac:parameter>
+      <ac:rich-text-body>
+        <ac:structured-macro ac:name="panel">
+          <ac:parameter ac:name="title">API Gateway</ac:parameter>
+          <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+          <ac:parameter ac:name="borderColor">#ff5630</ac:parameter>
+          <ac:parameter ac:name="titleBGColor">#ffebe6</ac:parameter>
+          <ac:parameter ac:name="bgColor">#fff</ac:parameter>
+          <ac:rich-text-body>
+            <ul>
+              <li><strong>Base Cost:</strong> $3.50 / million requests</li>
+              <li><strong>Data Transfer:</strong> $0.09 / GB</li>
+            </ul>
+          </ac:rich-text-body>
+        </ac:structured-macro>
+      </ac:rich-text-body>
+    </ac:structured-macro>
+    <ac:structured-macro ac:name="column">
+      <ac:parameter ac:name="width">50%</ac:parameter>
+      <ac:rich-text-body>
+        <ac:structured-macro ac:name="panel">
+          <ac:parameter ac:name="title">ALB + Spring Gateway</ac:parameter>
+          <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+          <ac:parameter ac:name="borderColor">#36b37e</ac:parameter>
+          <ac:parameter ac:name="titleBGColor">#e3fcef</ac:parameter>
+          <ac:parameter ac:name="bgColor">#fff</ac:parameter>
+          <ac:rich-text-body>
+            <ul>
+              <li><strong>Base Cost:</strong> ~$16/month + LCU</li>
+              <li><strong>Data Transfer:</strong> $0.008 / GB <ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">11x cheaper</ac:parameter></ac:structured-macro></li>
+            </ul>
+          </ac:rich-text-body>
+        </ac:structured-macro>
+      </ac:rich-text-body>
+    </ac:structured-macro>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>Monthly Cost Estimates</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Traffic Volume</th>
+      <th>API Gateway</th>
+      <th>ALB + Spring Gateway</th>
+      <th>Winner</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>10M req/month</td>
+      <td>~$35</td>
+      <td>~$25-40</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">Similar</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td>100M req/month</td>
+      <td>~$350</td>
+      <td>~$50-80</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + SCG</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td>500M req/month</td>
+      <td>~$1,750</td>
+      <td>~$100-150</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + SCG</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td>1B req/month</td>
+      <td>~$3,500</td>
+      <td>~$150-300</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + SCG</ac:parameter></ac:structured-macro></td>
+    </tr>
+  </tbody>
+</table>
+
+<ac:structured-macro ac:name="tip">
+  <ac:parameter ac:name="title">Cost Verdict</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>API Gateway</strong> is cheaper at low volume (&lt;10M req/month)</p>
+    <p><strong>ALB + Spring Gateway</strong> is <strong>significantly cheaper</strong> at high volume</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Performance -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="tick"/> Performance</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>API Gateway</th>
+      <th>ALB + Spring Gateway</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Added Latency</strong></td>
+      <td>10-30ms</td>
+      <td>5-15ms (ALB) + 5-20ms (SCG)</td>
+    </tr>
+    <tr>
+      <td><strong>Cold Start</strong></td>
+      <td>None</td>
+      <td>None (if SCG warmed)</td>
+    </tr>
+    <tr>
+      <td><strong>Max Throughput</strong></td>
+      <td>10K req/sec (soft limit)</td>
+      <td>Scales with ALB + pods</td>
+    </tr>
+    <tr>
+      <td><strong>WebSocket Duration</strong></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">2-hour limit</ac:parameter></ac:structured-macro></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">No limit</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>Max Payload Size</strong></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">10MB</ac:parameter></ac:structured-macro></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Configurable</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>gRPC Support</strong></td>
+      <td>HTTP/2 only</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Full native support</ac:parameter></ac:structured-macro></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Features -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="tick"/> Features</h1>
+
+<ac:structured-macro ac:name="expand">
+  <ac:parameter ac:name="title">Click to expand Routing Capabilities</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead>
+        <tr>
+          <th>Routing Type</th>
+          <th>API Gateway</th>
+          <th>Spring Cloud Gateway</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Path-based</td><td><ac:emoticon ac:name="tick"/> Yes</td><td><ac:emoticon ac:name="tick"/> Yes</td></tr>
+        <tr><td>Header-based</td><td><ac:emoticon ac:name="tick"/> Yes (limited)</td><td><ac:emoticon ac:name="tick"/> Yes (full control)</td></tr>
+        <tr><td>Query parameter</td><td><ac:emoticon ac:name="tick"/> Yes</td><td><ac:emoticon ac:name="tick"/> Yes</td></tr>
+        <tr><td>Method-based</td><td><ac:emoticon ac:name="tick"/> Yes</td><td><ac:emoticon ac:name="tick"/> Yes</td></tr>
+        <tr><td>Host-based</td><td><ac:emoticon ac:name="tick"/> Yes</td><td><ac:emoticon ac:name="tick"/> Yes</td></tr>
+        <tr><td>Weighted (A/B)</td><td><ac:emoticon ac:name="tick"/> Yes (canary)</td><td><ac:emoticon ac:name="tick"/> Yes</td></tr>
+        <tr><td>Cookie-based</td><td><ac:emoticon ac:name="cross"/> No</td><td><ac:emoticon ac:name="tick"/> Yes</td></tr>
+        <tr><td>Custom predicates</td><td><ac:emoticon ac:name="cross"/> No</td><td><ac:emoticon ac:name="tick"/> Yes (Java)</td></tr>
+        <tr><td>Regex routes</td><td>Limited</td><td><ac:emoticon ac:name="tick"/> Yes</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="expand">
+  <ac:parameter ac:name="title">Click to expand Security Features</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>API Gateway</th>
+          <th>ALB + Spring Gateway</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>WAF Integration</strong></td><td><ac:emoticon ac:name="tick"/> Yes (Native)</td><td><ac:emoticon ac:name="tick"/> Yes (on ALB)</td></tr>
+        <tr><td><strong>DDoS Protection</strong></td><td><ac:emoticon ac:name="tick"/> Shield (auto)</td><td><ac:emoticon ac:name="tick"/> Shield (on ALB)</td></tr>
+        <tr><td><strong>Private API</strong></td><td>VPC Endpoints</td><td>Private ALB</td></tr>
+        <tr><td><strong>IAM Auth</strong></td><td><ac:emoticon ac:name="tick"/> Yes (Native)</td><td>Custom</td></tr>
+        <tr><td><strong>JWT Validation</strong></td><td>Lambda authorizer</td><td><ac:emoticon ac:name="tick"/> Spring Security</td></tr>
+        <tr><td><strong>OAuth2/OIDC</strong></td><td>Cognito</td><td><ac:emoticon ac:name="tick"/> Spring Security (full)</td></tr>
+        <tr><td><strong>API Keys</strong></td><td><ac:emoticon ac:name="tick"/> Built-in</td><td>Custom</td></tr>
+        <tr><td><strong>mTLS</strong></td><td><ac:emoticon ac:name="tick"/> Supported</td><td><ac:emoticon ac:name="tick"/> Supported</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="expand">
+  <ac:parameter ac:name="title">Click to expand Resilience Features</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>API Gateway</th>
+          <th>ALB + Spring Gateway</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Rate Limiting</strong></td><td><ac:emoticon ac:name="tick"/> Built-in</td><td>Custom (Redis)</td></tr>
+        <tr><td><strong>Circuit Breaker</strong></td><td><ac:emoticon ac:name="cross"/> Not built-in</td><td><ac:emoticon ac:name="tick"/> Resilience4j</td></tr>
+        <tr><td><strong>Retry Logic</strong></td><td>Limited</td><td><ac:emoticon ac:name="tick"/> Full control</td></tr>
+        <tr><td><strong>Bulkhead Pattern</strong></td><td><ac:emoticon ac:name="cross"/> Not available</td><td><ac:emoticon ac:name="tick"/> Resilience4j</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Regional Failover -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="warning"/> Regional Failover</h1>
+
+<h2>Option 1: API Gateway Multi-Region</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">API Gateway Failover Architecture</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#ff8b00</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#fff7e6</ac:parameter>
+  <ac:parameter ac:name="bgColor">#fffae6</ac:parameter>
+  <ac:rich-text-body>
+    <p>
+      <ac:image ac:align="center" ac:width="800" ac:border="true">
+        <ri:attachment ri:filename="03-api-gateway-failover.png"/>
+      </ac:image>
+    </p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="info">
+  <ac:rich-text-body>
+    <p><strong>Failover Time:</strong> 60-120 seconds (DNS TTL dependent)</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<h2>Option 2: ALB + Spring Gateway Multi-Region</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Spring Gateway Failover Architecture</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#36b37e</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#e3fcef</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f4fff8</ac:parameter>
+  <ac:rich-text-body>
+    <p>
+      <ac:image ac:align="center" ac:width="800" ac:border="true">
+        <ri:attachment ri:filename="04-spring-gateway-failover.png"/>
+      </ac:image>
+    </p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="tip">
+  <ac:rich-text-body>
+    <p><strong>Multi-layer health checks:</strong> ALB → Spring GW → Backend (3 layers of detection)</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<h2>Option 3: Global Accelerator (Recommended)</h2>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Global Accelerator - Fastest Failover</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#6554c0</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#eae6ff</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f8f7ff</ac:parameter>
+  <ac:rich-text-body>
+    <p>
+      <ac:image ac:align="center" ac:width="800" ac:border="true">
+        <ri:attachment ri:filename="05-global-accelerator.png"/>
+      </ac:image>
+    </p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="warning">
+  <ac:parameter ac:name="title">Fastest Failover Option</ac:parameter>
+  <ac:rich-text-body>
+    <ul>
+      <li><strong>Failover Time:</strong> 10-30 seconds (No DNS propagation!)</li>
+      <li>Anycast IPs (static)</li>
+      <li>TCP/UDP optimization over AWS backbone</li>
+      <li>Built-in DDoS protection</li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<h2>Failover Comparison Table</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Aspect</th>
+      <th>API Gateway</th>
+      <th>ALB + Spring Gateway</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Failover (Route53)</strong></td>
+      <td>60-120s</td>
+      <td>60-120s</td>
+    </tr>
+    <tr>
+      <td><strong>Failover (Global Accelerator)</strong></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">10-30s</ac:parameter></ac:structured-macro></td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">10-30s</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>Health Check Depth</strong></td>
+      <td>Endpoint only</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">3 layers</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>Custom Health Logic</strong></td>
+      <td>Limited</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Full (Actuator)</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>Session Continuity</strong></td>
+      <td>Limited</td>
+      <td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Redis Global</ac:parameter></ac:structured-macro></td>
+    </tr>
+    <tr>
+      <td><strong>Active-Active</strong></td>
+      <td><ac:emoticon ac:name="tick"/> Yes</td>
+      <td><ac:emoticon ac:name="tick"/> Yes</td>
+    </tr>
+    <tr>
+      <td><strong>Active-Passive</strong></td>
+      <td><ac:emoticon ac:name="tick"/> Yes</td>
+      <td><ac:emoticon ac:name="tick"/> Yes</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Recommended Architecture -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="star-yellow"/> Recommended Architecture</h1>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Multi-Region Production Architecture</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#6554c0</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#eae6ff</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ffffff</ac:parameter>
+  <ac:rich-text-body>
+    <p>
+      <ac:image ac:align="center" ac:width="900" ac:border="true">
+        <ri:attachment ri:filename="06-full-production-architecture.png"/>
+      </ac:image>
+    </p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="note">
+  <ac:parameter ac:name="title">Failover Flow</ac:parameter>
+  <ac:rich-text-body>
+    <ol>
+      <li>Global Accelerator detects ALB health failure (~10 seconds)</li>
+      <li>Traffic automatically routes to healthy region</li>
+      <li>Aurora Global Database promotes reader to writer</li>
+      <li>ElastiCache Global Datastore provides session continuity</li>
+    </ol>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Decision Matrix -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="light-on"/> Decision Matrix</h1>
+
+<ac:structured-macro ac:name="section">
+  <ac:rich-text-body>
+    <ac:structured-macro ac:name="column">
+      <ac:parameter ac:name="width">60%</ac:parameter>
+      <ac:rich-text-body>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Recommended Option</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Startup / MVP / Low traffic</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">API Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>High traffic (&gt;100M req/month)</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + Spring Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Simple CRUD APIs</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">API Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Complex routing/transformation</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + Spring Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Heavy Lambda usage</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">API Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Java/Spring team</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + Spring Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Need circuit breakers</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + Spring Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Minimal ops team</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">API Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Multi-cloud strategy</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + Spring Gateway</ac:parameter></ac:structured-macro></td></tr>
+            <tr><td>Fast regional failover</td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Purple</ac:parameter><ac:parameter ac:name="title">ALB + SCG + Global Acc</ac:parameter></ac:structured-macro></td></tr>
+          </tbody>
+        </table>
+      </ac:rich-text-body>
+    </ac:structured-macro>
+    <ac:structured-macro ac:name="column">
+      <ac:parameter ac:name="width">40%</ac:parameter>
+      <ac:rich-text-body>
+        <ac:structured-macro ac:name="panel">
+          <ac:parameter ac:name="title">Legend</ac:parameter>
+          <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+          <ac:parameter ac:name="borderColor">#ddd</ac:parameter>
+          <ac:parameter ac:name="bgColor">#f9f9f9</ac:parameter>
+          <ac:rich-text-body>
+            <p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Blue</ac:parameter><ac:parameter ac:name="title">API Gateway</ac:parameter></ac:structured-macro> = AWS Native</p>
+            <p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">ALB + SCG</ac:parameter></ac:structured-macro> = Spring-based</p>
+            <p><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Purple</ac:parameter><ac:parameter ac:name="title">Global Acc</ac:parameter></ac:structured-macro> = Premium Failover</p>
+          </ac:rich-text-body>
+        </ac:structured-macro>
+      </ac:rich-text-body>
+    </ac:structured-macro>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Final Recommendation -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="star-blue"/> Final Recommendation</h1>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">RECOMMENDED: ALB + Spring Cloud Gateway + Global Accelerator</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#36b37e</ac:parameter>
+  <ac:parameter ac:name="titleBGColor">#e3fcef</ac:parameter>
+  <ac:parameter ac:name="bgColor">#ffffff</ac:parameter>
+  <ac:rich-text-body>
+    <table>
+      <thead>
+        <tr>
+          <th>Factor</th>
+          <th>Why This Option Wins</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Faster Failover</ac:parameter></ac:structured-macro></td><td>Global Accelerator bypasses DNS propagation delays</td></tr>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Health Check Depth</ac:parameter></ac:structured-macro></td><td>Multi-layer: ALB → SCG → Backend</td></tr>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Custom Health Logic</ac:parameter></ac:structured-macro></td><td>Spring Actuator checks all dependencies</td></tr>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Circuit Breaker</ac:parameter></ac:structured-macro></td><td>Resilience4j prevents cascading failures</td></tr>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Session Handling</ac:parameter></ac:structured-macro></td><td>ElastiCache Global for cross-region</td></tr>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Cost at Scale</ac:parameter></ac:structured-macro></td><td>Cheaper for high-traffic deployments</td></tr>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Observability</ac:parameter></ac:structured-macro></td><td>Better distributed tracing</td></tr>
+        <tr><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Flexibility</ac:parameter></ac:structured-macro></td><td>Full control over everything</td></tr>
+      </tbody>
+    </table>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr/>
+
+<!-- ============================================== -->
+<!-- SECTION: Document Information -->
+<!-- ============================================== -->
+<h1><ac:emoticon ac:name="information"/> Document Information</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Created</strong></td><td>February 2026</td></tr>
+    <tr><td><strong>Author</strong></td><td>Architecture Team</td></tr>
+    <tr><td><strong>Version</strong></td><td>1.0</td></tr>
+    <tr><td><strong>Status</strong></td><td><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Green</ac:parameter><ac:parameter ac:name="title">Approved</ac:parameter></ac:structured-macro></td></tr>
+  </tbody>
+</table>
+
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Related Documents</ac:parameter>
+  <ac:parameter ac:name="borderStyle">solid</ac:parameter>
+  <ac:parameter ac:name="borderColor">#ddd</ac:parameter>
+  <ac:parameter ac:name="bgColor">#f9f9f9</ac:parameter>
+  <ac:rich-text-body>
+    <ul>
+      <li><ac:link><ri:url ri:value="https://docs.spring.io/spring-cloud-gateway/"/><ac:plain-text-link-body><![CDATA[Spring Cloud Gateway Documentation]]></ac:plain-text-link-body></ac:link></li>
+      <li><ac:link><ri:url ri:value="https://docs.aws.amazon.com/apigateway/"/><ac:plain-text-link-body><![CDATA[AWS API Gateway Documentation]]></ac:plain-text-link-body></ac:link></li>
+      <li><ac:link><ri:url ri:value="https://docs.aws.amazon.com/global-accelerator/"/><ac:plain-text-link-body><![CDATA[AWS Global Accelerator]]></ac:plain-text-link-body></ac:link></li>
+    </ul>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+</ac:confluence>
