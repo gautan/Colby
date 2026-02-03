@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ac:confluence xmlns:ac="http://www.atlassian.com/schema/confluence/4/ac/" xmlns:ri="http://www.atlassian.com/schema/confluence/4/ri/">
+<h1>AWS Architecture Comparison</h1>
+<p><strong>Route53 → API Gateway</strong> vs <strong>Route53 → ALB → Spring Cloud Gateway</strong></p>
+
+<ac:structured-macro ac:name="toc"/>
+
+<h1>Architecture Diagrams</h1>
+
+<h2>Option 1: API Gateway + VPC Link</h2>
+<ac:structured-macro ac:name="balsamiq">
+<ac:parameter ac:name="Name">API Gateway Architecture</ac:parameter>
+<ac:plain-text-body><![CDATA[{"mockup":{"controls":{"control":[{"ID":"0","typeID":"Canvas","x":"50","y":"50","w":"600","h":"400","properties":{"text":"AWS Region","color":"16770457"}},{"ID":"1","typeID":"Canvas","x":"70","y":"100","w":"560","h":"250","properties":{"text":"VPC","color":"13434879"}},{"ID":"2","typeID":"Button","x":"100","y":"180","w":"120","h":"80","properties":{"text":"NLB\n(VPC Link)","color":"16776960"}},{"ID":"3","typeID":"Canvas","x":"280","y":"150","w":"320","h":"120","properties":{"text":"EKS Cluster","color":"15658734"}},{"ID":"4","typeID":"Button","x":"300","y":"190","w":"80","h":"60","properties":{"text":"Pod","color":"10079487"}},{"ID":"5","typeID":"Button","x":"400","y":"190","w":"80","h":"60","properties":{"text":"Pod","color":"10079487"}},{"ID":"6","typeID":"Button","x":"500","y":"190","w":"80","h":"60","properties":{"text":"Pod","color":"10079487"}},{"ID":"7","typeID":"Button","x":"250","y":"380","w":"150","h":"60","properties":{"text":"API Gateway\n(HTTP)","color":"16750848"}},{"ID":"8","typeID":"Button","x":"250","y":"480","w":"150","h":"60","properties":{"text":"Route 53","color":"6737151"}},{"ID":"9","typeID":"Icon","x":"280","y":"560","w":"80","h":"80","properties":{"icon":"UserIcon"}}]},"version":"1.0"}}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<table>
+<tbody>
+<tr><th>Component</th><th>Description</th></tr>
+<tr><td><strong>Route53</strong></td><td>DNS routing and health checks</td></tr>
+<tr><td><strong>API Gateway</strong></td><td>HTTP API (regional endpoint)</td></tr>
+<tr><td><strong>VPC Link</strong></td><td>Private connection into VPC</td></tr>
+<tr><td><strong>NLB</strong></td><td>Network Load Balancer (target for VPC Link)</td></tr>
+<tr><td><strong>EKS</strong></td><td>Kubernetes pods running microservices</td></tr>
+</tbody>
+</table>
+
+<h2>Option 2: ALB + Spring Cloud Gateway</h2>
+<ac:structured-macro ac:name="balsamiq">
+<ac:parameter ac:name="Name">Spring Cloud Gateway Architecture</ac:parameter>
+<ac:plain-text-body><![CDATA[{"mockup":{"controls":{"control":[{"ID":"0","typeID":"Canvas","x":"50","y":"50","w":"700","h":"450","properties":{"text":"AWS Region","color":"16770457"}},{"ID":"1","typeID":"Canvas","x":"70","y":"100","w":"660","h":"300","properties":{"text":"VPC","color":"13434879"}},{"ID":"2","typeID":"Button","x":"90","y":"180","w":"100","h":"120","properties":{"text":"ALB","color":"16750848"}},{"ID":"3","typeID":"Canvas","x":"220","y":"150","w":"200","h":"180","properties":{"text":"EKS (Gateway)","color":"10092543"}},{"ID":"4","typeID":"Button","x":"240","y":"190","w":"160","h":"50","properties":{"text":"Spring Cloud GW","color":"6737151"}},{"ID":"5","typeID":"Button","x":"240","y":"260","w":"160","h":"50","properties":{"text":"Spring Cloud GW","color":"6737151"}},{"ID":"6","typeID":"Canvas","x":"460","y":"150","w":"200","h":"180","properties":{"text":"EKS (Backend)","color":"15658734"}},{"ID":"7","typeID":"Button","x":"480","y":"190","w":"80","h":"50","properties":{"text":"Pod","color":"10079487"}},{"ID":"8","typeID":"Button","x":"560","y":"190","w":"80","h":"50","properties":{"text":"Pod","color":"10079487"}},{"ID":"9","typeID":"Button","x":"480","y":"260","w":"80","h":"50","properties":{"text":"Pod","color":"10079487"}},{"ID":"10","typeID":"Button","x":"340","y":"360","w":"120","h":"50","properties":{"text":"Lambda\n(Optional)","color":"16776960"}},{"ID":"11","typeID":"Button","x":"300","y":"480","w":"150","h":"60","properties":{"text":"Route 53","color":"6737151"}},{"ID":"12","typeID":"Icon","x":"330","y":"560","w":"80","h":"80","properties":{"icon":"UserIcon"}}]},"version":"1.0"}}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<table>
+<tbody>
+<tr><th>Component</th><th>Description</th></tr>
+<tr><td><strong>Route53</strong></td><td>DNS routing and health checks</td></tr>
+<tr><td><strong>ALB</strong></td><td>Application Load Balancer (public-facing)</td></tr>
+<tr><td><strong>Spring Cloud Gateway</strong></td><td>API Gateway running in EKS (2+ replicas)</td></tr>
+<tr><td><strong>EKS Backend Pods</strong></td><td>Microservices</td></tr>
+<tr><td><strong>Lambda</strong></td><td>Optional serverless functions</td></tr>
+</tbody>
+</table>
+
+<h1>Component Comparison</h1>
+<table>
+<tbody>
+<tr><th>Aspect</th><th>API Gateway + VPC Link</th><th>ALB + Spring Cloud Gateway</th></tr>
+<tr><td><strong>Components</strong></td><td>2 (APIGW, VPC Link)</td><td>3 (ALB, SCG, VPC Link)</td></tr>
+<tr><td><strong>Managed Services</strong></td><td>Fully managed</td><td>ALB managed, SCG self-managed</td></tr>
+<tr><td><strong>Operational Overhead</strong></td><td>Low</td><td>Medium (manage SCG pods)</td></tr>
+<tr><td><strong>Infrastructure as Code</strong></td><td>Simple (fewer resources)</td><td>More complex</td></tr>
+<tr><td><strong>Team Skills Required</strong></td><td>AWS knowledge</td><td>AWS + Java + Kubernetes + Spring</td></tr>
+</tbody>
+</table>
+
+<h1>Cost Analysis</h1>
+<h2>Per-Request Pricing</h2>
+<table>
+<tbody>
+<tr><th>Factor</th><th>API Gateway</th><th>ALB + Spring Gateway</th></tr>
+<tr><td><strong>Base Cost</strong></td><td>$3.50/million requests</td><td>ALB: ~$16/month + LCU charges</td></tr>
+<tr><td><strong>Data Transfer</strong></td><td>$0.09/GB</td><td>$0.008/GB (11x cheaper)</td></tr>
+</tbody>
+</table>
+
+<h2>Monthly Cost Estimates</h2>
+<table>
+<tbody>
+<tr><th>Traffic Volume</th><th>API Gateway</th><th>ALB + Spring Gateway</th><th>Winner</th></tr>
+<tr><td>10M requests/month</td><td>~$35</td><td>~$25-40</td><td>Similar</td></tr>
+<tr><td>100M requests/month</td><td>~$350</td><td>~$50-80</td><td><strong>ALB + SCG</strong></td></tr>
+<tr><td>500M requests/month</td><td>~$1,750</td><td>~$100-150</td><td><strong>ALB + SCG</strong></td></tr>
+<tr><td>1B requests/month</td><td>~$3,500</td><td>~$150-300</td><td><strong>ALB + SCG</strong></td></tr>
+</tbody>
+</table>
+
+<ac:structured-macro ac:name="tip">
+<ac:parameter ac:name="title">Cost Verdict</ac:parameter>
+<ac:rich-text-body><p><strong>API Gateway</strong> is cheaper at low volume. <strong>ALB + Spring Gateway</strong> is significantly cheaper at high volume.</p></ac:rich-text-body>
+</ac:structured-macro>
+
+<h1>Performance</h1>
+<table>
+<tbody>
+<tr><th>Metric</th><th>API Gateway</th><th>ALB + Spring Gateway</th></tr>
+<tr><td><strong>Added Latency</strong></td><td>10-30ms</td><td>5-15ms (ALB) + 5-20ms (SCG)</td></tr>
+<tr><td><strong>Cold Start</strong></td><td>None</td><td>None (if SCG pods are warmed)</td></tr>
+<tr><td><strong>Max Throughput</strong></td><td>10,000 req/sec (soft limit)</td><td>Scales with ALB + pod count</td></tr>
+<tr><td><strong>WebSocket Duration</strong></td><td>2-hour limit</td><td>No limit</td></tr>
+<tr><td><strong>Max Payload Size</strong></td><td>10MB</td><td>Configurable (can be larger)</td></tr>
+<tr><td><strong>gRPC Support</strong></td><td>HTTP/2 only</td><td>Full native support</td></tr>
+</tbody>
+</table>
+
+<h1>Features</h1>
+<h2>Routing Capabilities</h2>
+<table>
+<tbody>
+<tr><th>Routing Type</th><th>API Gateway</th><th>Spring Cloud Gateway</th></tr>
+<tr><td>Path-based</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Header-based</td><td>Yes (limited)</td><td>Yes (full control)</td></tr>
+<tr><td>Query parameter</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Cookie-based</td><td>No</td><td>Yes</td></tr>
+<tr><td>Custom predicates</td><td>No</td><td>Yes (Java code)</td></tr>
+<tr><td>Regex routes</td><td>Limited</td><td>Yes</td></tr>
+</tbody>
+</table>
+
+<h2>Security Features</h2>
+<table>
+<tbody>
+<tr><th>Feature</th><th>API Gateway</th><th>ALB + Spring Gateway</th></tr>
+<tr><td><strong>WAF Integration</strong></td><td>Yes (Native)</td><td>Yes (on ALB)</td></tr>
+<tr><td><strong>DDoS Protection</strong></td><td>Shield (automatic)</td><td>Shield (on ALB)</td></tr>
+<tr><td><strong>JWT Validation</strong></td><td>Lambda authorizer</td><td>Spring Security (native)</td></tr>
+<tr><td><strong>OAuth2/OIDC</strong></td><td>Cognito integration</td><td>Spring Security (full control)</td></tr>
+<tr><td><strong>mTLS</strong></td><td>Supported</td><td>Supported</td></tr>
+</tbody>
+</table>
+
+<h2>Resilience Features</h2>
+<table>
+<tbody>
+<tr><th>Feature</th><th>API Gateway</th><th>ALB + Spring Gateway</th></tr>
+<tr><td><strong>Rate Limiting</strong></td><td>Built-in (usage plans)</td><td>Custom (Redis-backed)</td></tr>
+<tr><td><strong>Circuit Breaker</strong></td><td>Not built-in</td><td>Resilience4j (built-in)</td></tr>
+<tr><td><strong>Retry Logic</strong></td><td>Limited</td><td>Full control</td></tr>
+<tr><td><strong>Bulkhead Pattern</strong></td><td>Not available</td><td>Resilience4j</td></tr>
+</tbody>
+</table>
+
+<h1>Regional Failover</h1>
+
+<h2>Option 1: API Gateway Multi-Region</h2>
+<ac:structured-macro ac:name="balsamiq">
+<ac:parameter ac:name="Name">API Gateway Failover</ac:parameter>
+<ac:plain-text-body><![CDATA[{"mockup":{"controls":{"control":[{"ID":"0","typeID":"Icon","x":"50","y":"200","w":"80","h":"80","properties":{"icon":"UserIcon"}},{"ID":"1","typeID":"Button","x":"180","y":"190","w":"150","h":"80","properties":{"text":"Route 53\n(Failover)","color":"6737151"}},{"ID":"2","typeID":"Canvas","x":"400","y":"50","w":"400","h":"150","properties":{"text":"Region A (Primary)","color":"10092543"}},{"ID":"3","typeID":"Button","x":"420","y":"100","w":"100","h":"50","properties":{"text":"API GW","color":"16750848"}},{"ID":"4","typeID":"Button","x":"540","y":"100","w":"80","h":"50","properties":{"text":"NLB","color":"16776960"}},{"ID":"5","typeID":"Button","x":"640","y":"100","w":"100","h":"50","properties":{"text":"EKS Pods","color":"10079487"}},{"ID":"6","typeID":"Canvas","x":"400","y":"250","w":"400","h":"150","properties":{"text":"Region B (Secondary)","color":"15658734"}},{"ID":"7","typeID":"Button","x":"420","y":"300","w":"100","h":"50","properties":{"text":"API GW","color":"16750848"}},{"ID":"8","typeID":"Button","x":"540","y":"300","w":"80","h":"50","properties":{"text":"NLB","color":"16776960"}},{"ID":"9","typeID":"Button","x":"640","y":"300","w":"100","h":"50","properties":{"text":"EKS Pods","color":"10079487"}}]},"version":"1.0"}}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="info">
+<ac:rich-text-body><p><strong>Failover Time:</strong> 60-120 seconds (DNS TTL dependent)</p></ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>Option 2: ALB + Spring Gateway Multi-Region</h2>
+<ac:structured-macro ac:name="balsamiq">
+<ac:parameter ac:name="Name">Spring Gateway Failover</ac:parameter>
+<ac:plain-text-body><![CDATA[{"mockup":{"controls":{"control":[{"ID":"0","typeID":"Icon","x":"50","y":"200","w":"80","h":"80","properties":{"icon":"UserIcon"}},{"ID":"1","typeID":"Button","x":"180","y":"190","w":"150","h":"80","properties":{"text":"Route 53\n(Failover)","color":"6737151"}},{"ID":"2","typeID":"Canvas","x":"400","y":"50","w":"450","h":"150","properties":{"text":"Region A (Primary)","color":"10092543"}},{"ID":"3","typeID":"Button","x":"420","y":"100","w":"80","h":"50","properties":{"text":"ALB","color":"16750848"}},{"ID":"4","typeID":"Button","x":"520","y":"100","w":"120","h":"50","properties":{"text":"Spring GW","color":"6737151"}},{"ID":"5","typeID":"Button","x":"660","y":"100","w":"120","h":"50","properties":{"text":"EKS Backend","color":"10079487"}},{"ID":"6","typeID":"Canvas","x":"400","y":"250","w":"450","h":"150","properties":{"text":"Region B (Secondary)","color":"15658734"}},{"ID":"7","typeID":"Button","x":"420","y":"300","w":"80","h":"50","properties":{"text":"ALB","color":"16750848"}},{"ID":"8","typeID":"Button","x":"520","y":"300","w":"120","h":"50","properties":{"text":"Spring GW","color":"6737151"}},{"ID":"9","typeID":"Button","x":"660","y":"300","w":"120","h":"50","properties":{"text":"EKS Backend","color":"10079487"}}]},"version":"1.0"}}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="tip">
+<ac:rich-text-body><p><strong>Multi-layer health checks:</strong> ALB → Spring GW → Backend (3 layers of detection)</p></ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>Option 3: Global Accelerator (Recommended)</h2>
+<ac:structured-macro ac:name="balsamiq">
+<ac:parameter ac:name="Name">Global Accelerator</ac:parameter>
+<ac:plain-text-body><![CDATA[{"mockup":{"controls":{"control":[{"ID":"0","typeID":"Icon","x":"50","y":"180","w":"80","h":"80","properties":{"icon":"UserIcon"}},{"ID":"1","typeID":"Button","x":"180","y":"160","w":"180","h":"100","properties":{"text":"Global\nAccelerator\n(Anycast IPs)","color":"6697881"}},{"ID":"2","typeID":"Canvas","x":"450","y":"50","w":"350","h":"130","properties":{"text":"Region A (Primary)","color":"10092543"}},{"ID":"3","typeID":"Label","x":"480","y":"100","w":"300","h":"40","properties":{"text":"ALB → Spring GW → EKS Pods"}},{"ID":"4","typeID":"Canvas","x":"450","y":"230","w":"350","h":"130","properties":{"text":"Region B (Secondary)","color":"15658734"}},{"ID":"5","typeID":"Label","x":"480","y":"280","w":"300","h":"40","properties":{"text":"ALB → Spring GW → EKS Pods"}}]},"version":"1.0"}}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="warning">
+<ac:parameter ac:name="title">Fastest Failover Option</ac:parameter>
+<ac:rich-text-body>
+<ul>
+<li><strong>Failover Time:</strong> 10-30 seconds (No DNS propagation!)</li>
+<li>Anycast IPs (static)</li>
+<li>TCP/UDP optimization over AWS backbone</li>
+<li>Built-in DDoS protection</li>
+</ul>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<h2>Failover Comparison</h2>
+<table>
+<tbody>
+<tr><th>Aspect</th><th>API Gateway</th><th>ALB + Spring Gateway</th></tr>
+<tr><td><strong>Failover (Route53)</strong></td><td>60-120s</td><td>60-120s</td></tr>
+<tr><td><strong>Failover (Global Accelerator)</strong></td><td>10-30s</td><td>10-30s</td></tr>
+<tr><td><strong>Health Check Depth</strong></td><td>Endpoint only</td><td>3 layers</td></tr>
+<tr><td><strong>Custom Health Logic</strong></td><td>Limited</td><td>Full (Spring Actuator)</td></tr>
+<tr><td><strong>Session Continuity</strong></td><td>Limited</td><td>Redis Global Datastore</td></tr>
+</tbody>
+</table>
+
+<h1>Recommended Multi-Region Architecture</h1>
+<ac:structured-macro ac:name="balsamiq">
+<ac:parameter ac:name="Name">Full Production Architecture</ac:parameter>
+<ac:plain-text-body><![CDATA[{"mockup":{"controls":{"control":[{"ID":"0","typeID":"Button","x":"350","y":"30","w":"180","h":"60","properties":{"text":"CloudFront\n(Cache, WAF)","color":"16750848"}},{"ID":"1","typeID":"Button","x":"350","y":"120","w":"180","h":"60","properties":{"text":"Global Accelerator","color":"6697881"}},{"ID":"2","typeID":"Canvas","x":"50","y":"220","w":"380","h":"380","properties":{"text":"Region A","color":"10092543"}},{"ID":"3","typeID":"Button","x":"70","y":"270","w":"80","h":"50","properties":{"text":"ALB","color":"16750848"}},{"ID":"4","typeID":"Button","x":"170","y":"270","w":"120","h":"50","properties":{"text":"Spring GW","color":"6737151"}},{"ID":"5","typeID":"Button","x":"310","y":"270","w":"100","h":"50","properties":{"text":"EKS","color":"10079487"}},{"ID":"6","typeID":"Button","x":"130","y":"360","w":"160","h":"60","properties":{"text":"Aurora Global\n(Writer)","color":"3381759"}},{"ID":"7","typeID":"Button","x":"130","y":"460","w":"160","h":"60","properties":{"text":"ElastiCache\nGlobal","color":"16711680"}},{"ID":"8","typeID":"Canvas","x":"480","y":"220","w":"380","h":"380","properties":{"text":"Region B","color":"15658734"}},{"ID":"9","typeID":"Button","x":"500","y":"270","w":"80","h":"50","properties":{"text":"ALB","color":"16750848"}},{"ID":"10","typeID":"Button","x":"600","y":"270","w":"120","h":"50","properties":{"text":"Spring GW","color":"6737151"}},{"ID":"11","typeID":"Button","x":"740","y":"270","w":"100","h":"50","properties":{"text":"EKS","color":"10079487"}},{"ID":"12","typeID":"Button","x":"560","y":"360","w":"160","h":"60","properties":{"text":"Aurora Global\n(Reader)","color":"3381759"}},{"ID":"13","typeID":"Button","x":"560","y":"460","w":"160","h":"60","properties":{"text":"ElastiCache\nGlobal","color":"16711680"}},{"ID":"14","typeID":"Label","x":"310","y":"385","w":"140","h":"30","properties":{"text":"← Sync →"}},{"ID":"15","typeID":"Label","x":"310","y":"485","w":"140","h":"30","properties":{"text":"← Sync →"}}]},"version":"1.0"}}]]></ac:plain-text-body>
+</ac:structured-macro>
+
+<ac:structured-macro ac:name="note">
+<ac:parameter ac:name="title">Failover Flow</ac:parameter>
+<ac:rich-text-body>
+<ol>
+<li>Global Accelerator detects ALB health failure (~10 seconds)</li>
+<li>Traffic automatically routes to healthy region</li>
+<li>Aurora Global Database promotes reader to writer</li>
+<li>ElastiCache Global Datastore provides session continuity</li>
+</ol>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<h1>Decision Matrix</h1>
+<table>
+<tbody>
+<tr><th>Scenario</th><th>Recommended Option</th></tr>
+<tr><td>Startup / MVP / Low traffic</td><td><strong>API Gateway</strong></td></tr>
+<tr><td>High traffic (&gt;100M req/month)</td><td><strong>ALB + Spring Gateway</strong></td></tr>
+<tr><td>Simple CRUD APIs</td><td><strong>API Gateway</strong></td></tr>
+<tr><td>Complex routing/transformation</td><td><strong>ALB + Spring Gateway</strong></td></tr>
+<tr><td>Heavy Lambda usage</td><td><strong>API Gateway</strong></td></tr>
+<tr><td>Java/Spring team</td><td><strong>ALB + Spring Gateway</strong></td></tr>
+<tr><td>Need circuit breakers</td><td><strong>ALB + Spring Gateway</strong></td></tr>
+<tr><td>Minimal operations team</td><td><strong>API Gateway</strong></td></tr>
+<tr><td>Fast regional failover</td><td><strong>ALB + SCG + Global Accelerator</strong></td></tr>
+</tbody>
+</table>
+
+<h1>Final Recommendation</h1>
+<ac:structured-macro ac:name="panel">
+<ac:parameter ac:name="title">RECOMMENDED: ALB + Spring Cloud Gateway + Global Accelerator</ac:parameter>
+<ac:rich-text-body>
+<table>
+<tbody>
+<tr><th>Factor</th><th>Why This Option Wins</th></tr>
+<tr><td><strong>Faster Failover</strong></td><td>Global Accelerator bypasses DNS propagation delays</td></tr>
+<tr><td><strong>Health Check Depth</strong></td><td>Multi-layer: ALB → SCG → Backend</td></tr>
+<tr><td><strong>Custom Health Logic</strong></td><td>Spring Actuator checks all dependencies</td></tr>
+<tr><td><strong>Circuit Breaker</strong></td><td>Resilience4j prevents cascading failures</td></tr>
+<tr><td><strong>Session Handling</strong></td><td>ElastiCache Global for cross-region</td></tr>
+<tr><td><strong>Cost at Scale</strong></td><td>Cheaper for high-traffic deployments</td></tr>
+<tr><td><strong>Observability</strong></td><td>Better distributed tracing</td></tr>
+<tr><td><strong>Flexibility</strong></td><td>Full control over everything</td></tr>
+</tbody>
+</table>
+</ac:rich-text-body>
+</ac:structured-macro>
+
+<h1>Document Information</h1>
+<table>
+<tbody>
+<tr><th>Property</th><th>Value</th></tr>
+<tr><td><strong>Created</strong></td><td>February 2026</td></tr>
+<tr><td><strong>Author</strong></td><td>Architecture Team</td></tr>
+<tr><td><strong>Version</strong></td><td>1.0</td></tr>
+</tbody>
+</table>
+</ac:confluence>
