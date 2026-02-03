@@ -1,0 +1,141 @@
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="800" measuredH="650" mockupW="750" mockupH="600">
+  <controls>
+    <!-- AWS Region Container -->
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::Canvas" x="50" y="50" w="700" h="450" measuredW="100" measuredH="70" zOrder="0" locked="false" isInGroup="-1">
+      <controlProperties>
+        <borderStyle>square</borderStyle>
+        <color>16770457</color>
+        <text>AWS Region</text>
+      </controlProperties>
+    </control>
+
+    <!-- VPC Container -->
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Canvas" x="70" y="100" w="660" h="280" measuredW="100" measuredH="70" zOrder="1" locked="false" isInGroup="-1">
+      <controlProperties>
+        <borderStyle>square</borderStyle>
+        <color>13434879</color>
+        <text>VPC</text>
+      </controlProperties>
+    </control>
+
+    <!-- NLB -->
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Button" x="100" y="180" w="120" h="80" measuredW="100" measuredH="27" zOrder="2" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>16776960</color>
+        <text>NLB%0A(VPC Link)</text>
+      </controlProperties>
+    </control>
+
+    <!-- EKS Cluster Container -->
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::Canvas" x="280" y="150" w="420" h="150" measuredW="100" measuredH="70" zOrder="3" locked="false" isInGroup="-1">
+      <controlProperties>
+        <borderStyle>square</borderStyle>
+        <color>15658734</color>
+        <text>EKS Cluster</text>
+      </controlProperties>
+    </control>
+
+    <!-- Pod 1 -->
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Button" x="310" y="200" w="100" h="70" measuredW="100" measuredH="27" zOrder="4" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>10079487</color>
+        <text>Pod</text>
+      </controlProperties>
+    </control>
+
+    <!-- Pod 2 -->
+    <control controlID="5" controlTypeID="com.balsamiq.mockups::Button" x="430" y="200" w="100" h="70" measuredW="100" measuredH="27" zOrder="5" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>10079487</color>
+        <text>Pod</text>
+      </controlProperties>
+    </control>
+
+    <!-- Pod 3 -->
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::Button" x="550" y="200" w="100" h="70" measuredW="100" measuredH="27" zOrder="6" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>10079487</color>
+        <text>Pod</text>
+      </controlProperties>
+    </control>
+
+    <!-- Arrow NLB to EKS -->
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::Arrow" x="220" y="210" w="60" h="10" measuredW="150" measuredH="100" zOrder="7" locked="false" isInGroup="-1">
+      <controlProperties>
+        <direction>right</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+        <stroke>solid</stroke>
+      </controlProperties>
+    </control>
+
+    <!-- API Gateway -->
+    <control controlID="8" controlTypeID="com.balsamiq.mockups::Button" x="300" y="420" w="200" h="70" measuredW="100" measuredH="27" zOrder="8" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>16750848</color>
+        <text>API Gateway%0A(HTTP API)</text>
+      </controlProperties>
+    </control>
+
+    <!-- VPC Link Arrow -->
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Arrow" x="390" y="330" w="20" h="90" measuredW="150" measuredH="100" zOrder="9" locked="false" isInGroup="-1">
+      <controlProperties>
+        <direction>top</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+        <stroke>dashed</stroke>
+        <text>VPC Link</text>
+      </controlProperties>
+    </control>
+
+    <!-- Route 53 -->
+    <control controlID="10" controlTypeID="com.balsamiq.mockups::Button" x="300" y="520" w="200" h="60" measuredW="100" measuredH="27" zOrder="10" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>6737151</color>
+        <text>Route 53</text>
+      </controlProperties>
+    </control>
+
+    <!-- Arrow Route53 to APIGW -->
+    <control controlID="11" controlTypeID="com.balsamiq.mockups::Arrow" x="390" y="490" w="20" h="30" measuredW="150" measuredH="100" zOrder="11" locked="false" isInGroup="-1">
+      <controlProperties>
+        <direction>top</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+        <stroke>solid</stroke>
+      </controlProperties>
+    </control>
+
+    <!-- Users Icon -->
+    <control controlID="12" controlTypeID="com.balsamiq.mockups::Icon" x="360" y="600" w="80" h="80" measuredW="48" measuredH="48" zOrder="12" locked="false" isInGroup="-1">
+      <controlProperties>
+        <icon>UsersIcon%7Clarge</icon>
+      </controlProperties>
+    </control>
+
+    <!-- Users Label -->
+    <control controlID="13" controlTypeID="com.balsamiq.mockups::Label" x="370" y="650" w="60" h="21" measuredW="36" measuredH="21" zOrder="13" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Users</text>
+      </controlProperties>
+    </control>
+
+    <!-- Arrow Users to Route53 -->
+    <control controlID="14" controlTypeID="com.balsamiq.mockups::Arrow" x="390" y="580" w="20" h="20" measuredW="150" measuredH="100" zOrder="14" locked="false" isInGroup="-1">
+      <controlProperties>
+        <direction>top</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+        <stroke>solid</stroke>
+      </controlProperties>
+    </control>
+
+    <!-- Title -->
+    <control controlID="15" controlTypeID="com.balsamiq.mockups::Title" x="200" y="10" w="400" h="30" measuredW="400" measuredH="30" zOrder="15" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Option 1: API Gateway + VPC Link</text>
+        <size>24</size>
+      </controlProperties>
+    </control>
+  </controls>
+</mockup>
