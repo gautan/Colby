@@ -1,0 +1,521 @@
+{info:title=AWS Architecture Comparison|icon=true}
+*Route53 → API Gateway* vs *Route53 → ALB → Spring Cloud Gateway*
+{info}
+
+----
+
+{toc:printable=true|style=square|maxLevel=3|indent=20px|minLevel=2|class=bigpink|exclude=[Ss]ummary|type=list|outline=true|include=.*}
+
+----
+
+h1. (!) Overview
+
+{panel:title=Document Purpose|borderStyle=solid|borderColor=#ccc|titleBGColor=#F7D6C1|bgColor=#FFFFCE}
+This document compares two AWS architecture patterns for API routing and provides recommendations for regional failover strategies.
+{panel}
+
+----
+
+h1. (+) Architecture Diagrams
+
+h2. Option 1: API Gateway + VPC Link
+
+{note:title=Balsamiq Wireframe}
+Import the following into Balsamiq or use the visual representation below.
+{note}
+
+{panel:title=Architecture: API Gateway Pattern|borderStyle=dashed|borderColor=#3572b0|titleBGColor=#e4f0f6|bgColor=#f0f9ff}
+{code:language=none|title=Balsamiq Wireframe XML}
+<mockup version="1.0">
+  <controls>
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::Canvas" x="50" y="50" w="600" h="400">
+      <controlProperties><text>AWS Region</text></controlProperties>
+    </control>
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Canvas" x="70" y="100" w="560" h="250">
+      <controlProperties><text>VPC</text></controlProperties>
+    </control>
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Button" x="100" y="150" w="120" h="80">
+      <controlProperties><text>NLB%0A(VPC Link)</text></controlProperties>
+    </control>
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::Canvas" x="280" y="130" w="320" h="120">
+      <controlProperties><text>EKS Cluster</text></controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Button" x="300" y="160" w="80" h="60">
+      <controlProperties><text>Pod</text></controlProperties>
+    </control>
+    <control controlID="5" controlTypeID="com.balsamiq.mockups::Button" x="400" y="160" w="80" h="60">
+      <controlProperties><text>Pod</text></controlProperties>
+    </control>
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::Button" x="500" y="160" w="80" h="60">
+      <controlProperties><text>Pod</text></controlProperties>
+    </control>
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::Button" x="250" y="380" w="150" h="60">
+      <controlProperties><text>API Gateway%0A(HTTP)</text></controlProperties>
+    </control>
+    <control controlID="8" controlTypeID="com.balsamiq.mockups::Button" x="250" y="480" w="150" h="60">
+      <controlProperties><text>Route 53</text></controlProperties>
+    </control>
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Icon" x="250" y="580" w="150" h="60">
+      <controlProperties><text>Users</text></controlProperties>
+    </control>
+  </controls>
+</mockup>
+{code}
+{panel}
+
+{panel:title=Visual Flow|borderStyle=solid|borderColor=#59afe1|titleBGColor=#deebff|bgColor=#ffffff}
+||Component||Description||
+|{status:colour=Blue|title=Users}|End users accessing the application|
+|↓| |
+|{status:colour=Green|title=Route 53}|DNS routing and health checks|
+|↓| |
+|{status:colour=Yellow|title=API Gateway}|HTTP API (regional endpoint)|
+|↓ VPC Link| |
+|{status:colour=Orange|title=NLB}|Network Load Balancer|
+|↓| |
+|{status:colour=Red|title=EKS Pods}|Kubernetes microservices|
+{panel}
+
+----
+
+h2. Option 2: ALB + Spring Cloud Gateway
+
+{panel:title=Architecture: Spring Cloud Gateway Pattern|borderStyle=dashed|borderColor=#3572b0|titleBGColor=#e4f0f6|bgColor=#f0f9ff}
+{code:language=none|title=Balsamiq Wireframe XML}
+<mockup version="1.0">
+  <controls>
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::Canvas" x="50" y="50" w="700" h="450">
+      <controlProperties><text>AWS Region</text></controlProperties>
+    </control>
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Canvas" x="70" y="100" w="660" h="300">
+      <controlProperties><text>VPC</text></controlProperties>
+    </control>
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Button" x="90" y="150" w="100" h="120">
+      <controlProperties><text>ALB</text></controlProperties>
+    </control>
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::Canvas" x="220" y="130" w="200" h="160">
+      <controlProperties><text>EKS (Gateway)</text></controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Button" x="240" y="160" w="160" h="50">
+      <controlProperties><text>Spring Cloud GW</text></controlProperties>
+    </control>
+    <control controlID="5" controlTypeID="com.balsamiq.mockups::Button" x="240" y="220" w="160" h="50">
+      <controlProperties><text>Spring Cloud GW</text></controlProperties>
+    </control>
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::Canvas" x="460" y="130" w="200" h="160">
+      <controlProperties><text>EKS (Backend)</text></controlProperties>
+    </control>
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::Button" x="480" y="160" w="80" h="40">
+      <controlProperties><text>Pod</text></controlProperties>
+    </control>
+    <control controlID="8" controlTypeID="com.balsamiq.mockups::Button" x="480" y="210" w="80" h="40">
+      <controlProperties><text>Pod</text></controlProperties>
+    </control>
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Button" x="560" y="160" w="80" h="40">
+      <controlProperties><text>Pod</text></controlProperties>
+    </control>
+    <control controlID="10" controlTypeID="com.balsamiq.mockups::Button" x="320" y="320" w="120" h="50">
+      <controlProperties><text>Lambda%0A(Optional)</text></controlProperties>
+    </control>
+    <control controlID="11" controlTypeID="com.balsamiq.mockups::Button" x="280" y="480" w="150" h="60">
+      <controlProperties><text>Route 53</text></controlProperties>
+    </control>
+    <control controlID="12" controlTypeID="com.balsamiq.mockups::Icon" x="280" y="580" w="150" h="60">
+      <controlProperties><text>Users</text></controlProperties>
+    </control>
+  </controls>
+</mockup>
+{code}
+{panel}
+
+{panel:title=Visual Flow|borderStyle=solid|borderColor=#59afe1|titleBGColor=#deebff|bgColor=#ffffff}
+||Component||Description||
+|{status:colour=Blue|title=Users}|End users accessing the application|
+|↓| |
+|{status:colour=Green|title=Route 53}|DNS routing and health checks|
+|↓| |
+|{status:colour=Yellow|title=ALB}|Application Load Balancer (public)|
+|↓| |
+|{status:colour=Orange|title=Spring Cloud GW}|API Gateway in EKS (2+ replicas)|
+|↓| |
+|{status:colour=Red|title=EKS Backend}|Microservices + Lambda (optional)|
+{panel}
+
+----
+
+h1. (?) Component Comparison
+
+{section}
+{column:width=100%}
+||Aspect||API Gateway + VPC Link||ALB + Spring Cloud Gateway||
+|*Components*|2 (APIGW, VPC Link)|3 (ALB, SCG, VPC Link)|
+|*Managed Services*|{status:colour=Green|title=Fully managed}|{status:colour=Yellow|title=ALB managed, SCG self-managed}|
+|*Operational Overhead*|{status:colour=Green|title=Low}|{status:colour=Yellow|title=Medium}|
+|*Infrastructure as Code*|Simple (fewer resources)|More complex|
+|*Team Skills Required*|AWS knowledge|AWS + Java + K8s + Spring|
+{column}
+{section}
+
+----
+
+h1. ($) Cost Analysis
+
+h2. Per-Request Pricing
+
+{section}
+{column:width=50%}
+{panel:title=API Gateway|borderStyle=solid|borderColor=#ff5630|titleBGColor=#ffebe6|bgColor=#fff}
+* *Base Cost:* $3.50 / million requests
+* *Data Transfer:* $0.09 / GB
+{panel}
+{column}
+{column:width=50%}
+{panel:title=ALB + Spring Gateway|borderStyle=solid|borderColor=#36b37e|titleBGColor=#e3fcef|bgColor=#fff}
+* *Base Cost:* ~$16/month + LCU
+* *Data Transfer:* $0.008 / GB {status:colour=Green|title=11x cheaper}
+{panel}
+{column}
+{section}
+
+h2. Monthly Cost Estimates
+
+||Traffic Volume||API Gateway||ALB + Spring Gateway||Winner||
+|10M req/month|~$35|~$25-40|{status:colour=Yellow|title=Similar}|
+|100M req/month|~$350|~$50-80|{status:colour=Green|title=ALB + SCG}|
+|500M req/month|~$1,750|~$100-150|{status:colour=Green|title=ALB + SCG}|
+|1B req/month|~$3,500|~$150-300|{status:colour=Green|title=ALB + SCG}|
+
+{tip:title=Cost Verdict}
+*API Gateway* is cheaper at low volume (<10M req/month)
+*ALB + Spring Gateway* is *significantly cheaper* at high volume
+{tip}
+
+----
+
+h1. (on) Performance
+
+||Metric||API Gateway||ALB + Spring Gateway||
+|*Added Latency*|10-30ms|5-15ms (ALB) + 5-20ms (SCG)|
+|*Cold Start*|None|None (if SCG warmed)|
+|*Max Throughput*|10K req/sec (soft limit)|Scales with ALB + pods|
+|*WebSocket Duration*|{status:colour=Red|title=2-hour limit}|{status:colour=Green|title=No limit}|
+|*Max Payload Size*|{status:colour=Yellow|title=10MB}|{status:colour=Green|title=Configurable}|
+|*gRPC Support*|HTTP/2 only|{status:colour=Green|title=Full native support}|
+
+----
+
+h1. (/) Features
+
+{expand:title=Click to expand Routing Capabilities}
+||Routing Type||API Gateway||Spring Cloud Gateway||
+|Path-based|(/) Yes|(/) Yes|
+|Header-based|(/) Yes (limited)|(/) Yes (full control)|
+|Query parameter|(/) Yes|(/) Yes|
+|Method-based|(/) Yes|(/) Yes|
+|Host-based|(/) Yes|(/) Yes|
+|Weighted (A/B)|(/) Yes (canary)|(/) Yes|
+|Cookie-based|(x) No|(/) Yes|
+|Custom predicates|(x) No|(/) Yes (Java)|
+|Regex routes|Limited|(/) Yes|
+{expand}
+
+{expand:title=Click to expand Security Features}
+||Feature||API Gateway||ALB + Spring Gateway||
+|*WAF Integration*|(/) Yes (Native)|(/) Yes (on ALB)|
+|*DDoS Protection*|(/) Shield (auto)|(/) Shield (on ALB)|
+|*Private API*|VPC Endpoints|Private ALB|
+|*IAM Auth*|(/) Yes (Native)|Custom|
+|*JWT Validation*|Lambda authorizer|(/) Spring Security|
+|*OAuth2/OIDC*|Cognito|(/) Spring Security (full)|
+|*API Keys*|(/) Built-in|Custom|
+|*mTLS*|(/) Supported|(/) Supported|
+{expand}
+
+{expand:title=Click to expand Resilience Features}
+||Feature||API Gateway||ALB + Spring Gateway||
+|*Rate Limiting*|(/) Built-in|Custom (Redis)|
+|*Circuit Breaker*|(x) Not built-in|(/) Resilience4j|
+|*Retry Logic*|Limited|(/) Full control|
+|*Bulkhead Pattern*|(x) Not available|(/) Resilience4j|
+{expand}
+
+----
+
+h1. (warning) Regional Failover
+
+h2. Option 1: API Gateway Multi-Region
+
+{panel:title=Balsamiq Wireframe - API Gateway Failover|borderStyle=dashed|borderColor=#ff8b00|titleBGColor=#fff7e6|bgColor=#fffae6}
+{code:language=none|title=Balsamiq BMML}
+<mockup version="1.0">
+  <controls>
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::Icon" x="50" y="250" w="80" h="80">
+      <controlProperties><icon>UserMale</icon><text>Users</text></controlProperties>
+    </control>
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Button" x="180" y="230" w="140" h="80">
+      <controlProperties><text>Route 53%0A(Failover)</text></controlProperties>
+    </control>
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Canvas" x="400" y="50" w="350" h="150">
+      <controlProperties><text>Region A (Primary)</text><color>16776960</color></controlProperties>
+    </control>
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::Button" x="420" y="90" w="100" h="50">
+      <controlProperties><text>API GW</text></controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Button" x="540" y="90" w="80" h="50">
+      <controlProperties><text>NLB</text></controlProperties>
+    </control>
+    <control controlID="5" controlTypeID="com.balsamiq.mockups::Button" x="640" y="90" w="90" h="50">
+      <controlProperties><text>EKS Pods</text></controlProperties>
+    </control>
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::Canvas" x="400" y="250" w="350" h="150">
+      <controlProperties><text>Region B (Secondary)</text><color>14474460</color></controlProperties>
+    </control>
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::Button" x="420" y="290" w="100" h="50">
+      <controlProperties><text>API GW</text></controlProperties>
+    </control>
+    <control controlID="8" controlTypeID="com.balsamiq.mockups::Button" x="540" y="290" w="80" h="50">
+      <controlProperties><text>NLB</text></controlProperties>
+    </control>
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Button" x="640" y="290" w="90" h="50">
+      <controlProperties><text>EKS Pods</text></controlProperties>
+    </control>
+  </controls>
+</mockup>
+{code}
+{panel}
+
+{info}
+*Failover Time:* 60-120 seconds (DNS TTL dependent)
+{info}
+
+----
+
+h2. Option 2: ALB + Spring Gateway Multi-Region
+
+{panel:title=Balsamiq Wireframe - Spring Gateway Failover|borderStyle=dashed|borderColor=#36b37e|titleBGColor=#e3fcef|bgColor=#f4fff8}
+{code:language=none|title=Balsamiq BMML}
+<mockup version="1.0">
+  <controls>
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::Icon" x="50" y="250" w="80" h="80">
+      <controlProperties><icon>UserMale</icon><text>Users</text></controlProperties>
+    </control>
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Button" x="180" y="230" w="140" h="80">
+      <controlProperties><text>Route 53%0A(Failover)</text></controlProperties>
+    </control>
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Canvas" x="400" y="50" w="400" h="150">
+      <controlProperties><text>Region A (Primary)</text><color>11206570</color></controlProperties>
+    </control>
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::Button" x="420" y="90" w="80" h="50">
+      <controlProperties><text>ALB</text></controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Button" x="520" y="90" w="120" h="50">
+      <controlProperties><text>Spring GW</text></controlProperties>
+    </control>
+    <control controlID="5" controlTypeID="com.balsamiq.mockups::Button" x="660" y="90" w="120" h="50">
+      <controlProperties><text>EKS Backend</text></controlProperties>
+    </control>
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::Canvas" x="400" y="250" w="400" h="150">
+      <controlProperties><text>Region B (Secondary)</text><color>14474460</color></controlProperties>
+    </control>
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::Button" x="420" y="290" w="80" h="50">
+      <controlProperties><text>ALB</text></controlProperties>
+    </control>
+    <control controlID="8" controlTypeID="com.balsamiq.mockups::Button" x="520" y="290" w="120" h="50">
+      <controlProperties><text>Spring GW</text></controlProperties>
+    </control>
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Button" x="660" y="290" w="120" h="50">
+      <controlProperties><text>EKS Backend</text></controlProperties>
+    </control>
+  </controls>
+</mockup>
+{code}
+{panel}
+
+{tip}
+*Multi-layer health checks:* ALB → Spring GW → Backend (3 layers of detection)
+{tip}
+
+----
+
+h2. Option 3: Global Accelerator (Recommended)
+
+{panel:title=Balsamiq Wireframe - Global Accelerator|borderStyle=solid|borderColor=#6554c0|titleBGColor=#eae6ff|bgColor=#f8f7ff}
+{code:language=none|title=Balsamiq BMML}
+<mockup version="1.0">
+  <controls>
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::Icon" x="50" y="200" w="80" h="80">
+      <controlProperties><icon>UserMale</icon><text>Users</text></controlProperties>
+    </control>
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Button" x="180" y="180" w="160" h="100">
+      <controlProperties><text>Global%0AAccelerator%0A(Anycast IPs)</text><color>6697881</color></controlProperties>
+    </control>
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Canvas" x="420" y="50" w="350" h="120">
+      <controlProperties><text>Region A (Primary)</text><color>11206570</color></controlProperties>
+    </control>
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::Label" x="440" y="90" w="300" h="30">
+      <controlProperties><text>ALB → Spring GW → EKS Pods</text></controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Canvas" x="420" y="220" w="350" h="120">
+      <controlProperties><text>Region B (Secondary)</text><color>14474460</color></controlProperties>
+    </control>
+    <control controlID="5" controlTypeID="com.balsamiq.mockups::Label" x="440" y="260" w="300" h="30">
+      <controlProperties><text>ALB → Spring GW → EKS Pods</text></controlProperties>
+    </control>
+  </controls>
+</mockup>
+{code}
+{panel}
+
+{warning:title=Fastest Failover Option}
+* *Failover Time:* 10-30 seconds (No DNS propagation!)
+* Anycast IPs (static)
+* TCP/UDP optimization over AWS backbone
+* Built-in DDoS protection
+{warning}
+
+----
+
+h2. Failover Comparison Table
+
+||Aspect||API Gateway||ALB + Spring Gateway||
+|*Failover (Route53)*|60-120s|60-120s|
+|*Failover (Global Accelerator)*|{status:colour=Green|title=10-30s}|{status:colour=Green|title=10-30s}|
+|*Health Check Depth*|Endpoint only|{status:colour=Green|title=3 layers}|
+|*Custom Health Logic*|Limited|{status:colour=Green|title=Full (Actuator)}|
+|*Session Continuity*|Limited|{status:colour=Green|title=Redis Global}|
+|*Active-Active*|(/) Yes|(/) Yes|
+|*Active-Passive*|(/) Yes|(/) Yes|
+
+----
+
+h1. (*) Recommended Architecture
+
+{panel:title=Multi-Region Production Architecture|borderStyle=solid|borderColor=#6554c0|titleBGColor=#eae6ff|bgColor=#ffffff}
+{code:language=none|title=Balsamiq BMML - Full Architecture}
+<mockup version="1.0">
+  <controls>
+    <!-- CloudFront -->
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::Button" x="350" y="30" w="150" h="60">
+      <controlProperties><text>CloudFront%0A(Cache, WAF)</text><color>16750848</color></controlProperties>
+    </control>
+    <!-- Global Accelerator -->
+    <control controlID="1" controlTypeID="com.balsamiq.mockups::Button" x="350" y="120" w="150" h="60">
+      <controlProperties><text>Global%0AAccelerator</text><color>6697881</color></controlProperties>
+    </control>
+    <!-- Region A -->
+    <control controlID="2" controlTypeID="com.balsamiq.mockups::Canvas" x="50" y="220" w="350" h="350">
+      <controlProperties><text>Region A</text><color>11206570</color></controlProperties>
+    </control>
+    <control controlID="3" controlTypeID="com.balsamiq.mockups::Button" x="70" y="260" w="80" h="50">
+      <controlProperties><text>ALB</text></controlProperties>
+    </control>
+    <control controlID="4" controlTypeID="com.balsamiq.mockups::Button" x="170" y="260" w="120" h="50">
+      <controlProperties><text>Spring GW</text></controlProperties>
+    </control>
+    <control controlID="5" controlTypeID="com.balsamiq.mockups::Button" x="310" y="260" w="80" h="50">
+      <controlProperties><text>EKS</text></controlProperties>
+    </control>
+    <control controlID="6" controlTypeID="com.balsamiq.mockups::Button" x="120" y="340" w="150" h="50">
+      <controlProperties><text>Aurora Global%0A(Writer)</text><color>3381759</color></controlProperties>
+    </control>
+    <control controlID="7" controlTypeID="com.balsamiq.mockups::Button" x="120" y="420" w="150" h="50">
+      <controlProperties><text>ElastiCache%0AGlobal</text><color>16711680</color></controlProperties>
+    </control>
+    <!-- Region B -->
+    <control controlID="8" controlTypeID="com.balsamiq.mockups::Canvas" x="450" y="220" w="350" h="350">
+      <controlProperties><text>Region B</text><color>14474460</color></controlProperties>
+    </control>
+    <control controlID="9" controlTypeID="com.balsamiq.mockups::Button" x="470" y="260" w="80" h="50">
+      <controlProperties><text>ALB</text></controlProperties>
+    </control>
+    <control controlID="10" controlTypeID="com.balsamiq.mockups::Button" x="570" y="260" w="120" h="50">
+      <controlProperties><text>Spring GW</text></controlProperties>
+    </control>
+    <control controlID="11" controlTypeID="com.balsamiq.mockups::Button" x="710" y="260" w="80" h="50">
+      <controlProperties><text>EKS</text></controlProperties>
+    </control>
+    <control controlID="12" controlTypeID="com.balsamiq.mockups::Button" x="520" y="340" w="150" h="50">
+      <controlProperties><text>Aurora Global%0A(Reader)</text><color>3381759</color></controlProperties>
+    </control>
+    <control controlID="13" controlTypeID="com.balsamiq.mockups::Button" x="520" y="420" w="150" h="50">
+      <controlProperties><text>ElastiCache%0AGlobal</text><color>16711680</color></controlProperties>
+    </control>
+    <!-- Sync arrows -->
+    <control controlID="14" controlTypeID="com.balsamiq.mockups::Label" x="310" y="360" w="100" h="30">
+      <controlProperties><text>← Sync →</text></controlProperties>
+    </control>
+    <control controlID="15" controlTypeID="com.balsamiq.mockups::Label" x="310" y="440" w="100" h="30">
+      <controlProperties><text>← Sync →</text></controlProperties>
+    </control>
+  </controls>
+</mockup>
+{code}
+{panel}
+
+{note:title=Failover Flow}
+# Global Accelerator detects ALB health failure (~10 seconds)
+# Traffic automatically routes to healthy region
+# Aurora Global Database promotes reader to writer
+# ElastiCache Global Datastore provides session continuity
+{note}
+
+----
+
+h1. (lightbulb) Decision Matrix
+
+{section}
+{column:width=60%}
+||Scenario||Recommended Option||
+|Startup / MVP / Low traffic|{status:colour=Blue|title=API Gateway}|
+|High traffic (>100M req/month)|{status:colour=Green|title=ALB + Spring Gateway}|
+|Simple CRUD APIs|{status:colour=Blue|title=API Gateway}|
+|Complex routing/transformation|{status:colour=Green|title=ALB + Spring Gateway}|
+|Heavy Lambda usage|{status:colour=Blue|title=API Gateway}|
+|Java/Spring team|{status:colour=Green|title=ALB + Spring Gateway}|
+|Need circuit breakers|{status:colour=Green|title=ALB + Spring Gateway}|
+|Minimal ops team|{status:colour=Blue|title=API Gateway}|
+|Multi-cloud strategy|{status:colour=Green|title=ALB + Spring Gateway}|
+|Fast regional failover|{status:colour=Purple|title=ALB + SCG + Global Acc}|
+{column}
+{column:width=40%}
+{panel:title=Legend|borderStyle=solid|borderColor=#ddd|bgColor=#f9f9f9}
+{status:colour=Blue|title=API Gateway} = AWS Native
+{status:colour=Green|title=ALB + SCG} = Spring-based
+{status:colour=Purple|title=Global Acc} = Premium Failover
+{panel}
+{column}
+{section}
+
+----
+
+h1. (star) Final Recommendation
+
+{panel:title=RECOMMENDED: ALB + Spring Cloud Gateway + Global Accelerator|borderStyle=solid|borderColor=#36b37e|titleBGColor=#e3fcef|bgColor=#ffffff}
+
+||Factor||Why This Option Wins||
+|{status:colour=Green|title=Faster Failover}|Global Accelerator bypasses DNS propagation delays|
+|{status:colour=Green|title=Health Check Depth}|Multi-layer: ALB → SCG → Backend|
+|{status:colour=Green|title=Custom Health Logic}|Spring Actuator checks all dependencies|
+|{status:colour=Green|title=Circuit Breaker}|Resilience4j prevents cascading failures|
+|{status:colour=Green|title=Session Handling}|ElastiCache Global for cross-region|
+|{status:colour=Green|title=Cost at Scale}|Cheaper for high-traffic deployments|
+|{status:colour=Green|title=Observability}|Better distributed tracing|
+|{status:colour=Green|title=Flexibility}|Full control over everything|
+
+{panel}
+
+----
+
+h1. (i) Document Information
+
+||Property||Value||
+|*Created*|February 2026|
+|*Author*|Architecture Team|
+|*Version*|1.0|
+|*Status*|{status:colour=Green|title=Approved}|
+
+{panel:title=Related Documents|borderStyle=solid|borderColor=#ddd|bgColor=#f9f9f9}
+* [Spring Cloud Gateway Documentation|https://docs.spring.io/spring-cloud-gateway/]
+* [AWS API Gateway Documentation|https://docs.aws.amazon.com/apigateway/]
+* [AWS Global Accelerator|https://docs.aws.amazon.com/global-accelerator/]
+{panel}
