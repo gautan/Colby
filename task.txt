@@ -1,0 +1,144 @@
+1. Cookie Email Service - Sends access credentials/links to existing users                                                    
+2. Temporary Cookie Email Service - Sends temporary access to new registrants                                                 
+3. Failure Notification Service - Alerts users when registration/access fails                                                 
+4. Internal Notification Service - Copies registration info to support team                                                   
+5. Alternate Email Resolution - CRM lookup for secondary email addresses                                                      
+6. Email Delivery Tracking - Detect failures to trigger alternate email flow     
+
+AWS Infrastructure Tasks for Option 2: ALB + Spring Cloud Gateway                                                             
+                                                                                                                                
+  Networking                                                                                                                    
+                                                                                                                                
+  - Create VPC with multi-AZ public/private subnets                                                                             
+  - Configure Internet Gateway and attach to VPC                                                                                
+  - Create NAT Gateways (one per AZ for high availability)                                                                      
+  - Configure Route Tables for public/private routes                                                                            
+  - Create Security Groups for ALB, EKS nodes, and pods                                                                         
+  - Enable VPC Flow Logs for network monitoring                                                                                 
+                                                                                                                                
+  Application Load Balancer                                                                                                     
+                                                                                                                                
+  - Create Application Load Balancer (public-facing, multi-AZ)                                                                  
+  - Request/import SSL certificate in ACM                                                                                       
+  - Configure HTTPS Listener on port 443 with TLS termination                                                                   
+  - Create Target Groups for Spring Cloud Gateway pods                                                                          
+  - Configure health checks (path: /actuator/health)                                                                            
+  - Attach WAF Web ACL with OWASP rules and rate limiting                                                                       
+  - Enable access logs to S3 bucket                                                                                             
+  - Enable deletion protection                                                                                                  
+                                                                                                                                
+  EKS Cluster                                                                                                                   
+                                                                                                                                
+  - Create EKS Cluster with control plane in private subnets                                                                    
+  - Create Managed Node Groups across multiple AZs                                                                              
+  - Configure OIDC Provider for IAM service account integration                                                                 
+  - Install AWS Load Balancer Controller                                                                                        
+  - Configure Cluster Autoscaler for node auto-scaling                                                                          
+  - Set up Container Insights for monitoring and logging                                                                        
+  - Install metrics-server for HPA                                                                                              
+  - Configure pod security policies                                                                                             
+                                                                                                                                
+  Spring Cloud Gateway Deployment                                                                                               
+                                                                                                                                
+  - Deploy Spring Cloud Gateway pods (2+ replicas minimum)                                                                      
+  - Configure Horizontal Pod Autoscaler (HPA)                                                                                   
+  - Create Service Account with IRSA for AWS access                                                                             
+  - Set up ConfigMap for route configuration                                                                                    
+  - Configure Resilience4j circuit breaker and rate limiting                                                                    
+  - Set up liveness and readiness probes                                                                                        
+  - Configure resource requests and limits                                                                                      
+  - Deploy PodDisruptionBudget for availability                                                                                 
+                                                                                                                                
+  Database                                                                                                                      
+                                                                                                                                
+  - Create Aurora PostgreSQL/MySQL cluster (Multi-AZ)                                                                           
+  - Configure Aurora Global Database for multi-region failover                                                                  
+  - Set up automated backups and retention policy                                                                               
+  - Configure parameter groups                                                                                                  
+  - Enable Performance Insights                                                                                                 
+  - Create DB subnet group in private subnets                                                                                   
+                                                                                                                                
+  Caching                                                                                                                       
+                                                                                                                                
+  - Create ElastiCache Redis cluster (cluster mode enabled)                                                                     
+  - Configure Multi-AZ with automatic failover                                                                                  
+  - Set up Global Datastore for cross-region replication                                                                        
+  - Configure subnet group in private subnets                                                                                   
+  - Set up parameter groups for Redis optimization                                                                              
+                                                                                                                                
+  DNS & Traffic Management                                                                                                      
+                                                                                                                                
+  - Create Route53 public hosted zone                                                                                           
+  - Create A/AAAA alias records pointing to ALB                                                                                 
+  - Configure Route53 health checks to monitor ALB endpoint                                                                     
+  - Set up failover or latency-based routing policy                                                                             
+                                                                                                                                
+  Global Accelerator (Recommended for Fast Failover)                                                                            
+                                                                                                                                
+  - Create Global Accelerator with anycast IPs                                                                                  
+  - Add endpoint groups per region (ALB as endpoints)                                                                           
+  - Configure TCP/HTTP health checks                                                                                            
+  - Set traffic dial weights per region                                                                                         
+  - Enable client affinity if needed                                                                                            
+                                                                                                                                
+  Security & IAM                                                                                                                
+                                                                                                                                
+  - Create IAM roles for EKS node groups                                                                                        
+  - Create IAM roles for pod service accounts (IRSA)                                                                            
+  - Configure Secrets Manager for DB credentials and API keys                                                                   
+  - Enable AWS Shield (Standard or Advanced) for DDoS protection                                                                
+  - Create KMS keys for encryption at rest                                                                                      
+  - Configure security group rules (least privilege)                                                                            
+  - Enable CloudTrail for audit logging                                                                                         
+                                                                                                                                
+  Monitoring & Observability                                                                                                    
+                                                                                                                                
+  - Create CloudWatch dashboards for ALB, EKS, and SCG metrics                                                                  
+  - Configure CloudWatch alarms for:                                                                                            
+    - ALB latency (p99 > threshold)                                                                                             
+    - 5xx error rate                                                                                                            
+    - Target group unhealthy hosts                                                                                              
+    - EKS node CPU/memory                                                                                                       
+    - Pod restart count                                                                                                         
+  - Enable X-Ray tracing for distributed tracing                                                                                
+  - Create CloudWatch Log Groups for application logs                                                                           
+  - Set up log retention policies                                                                                               
+  - Configure SNS topics for alert notifications                                                                                
+  - Set up log metric filters for error detection                                                                               
+                                                                                                                                
+  Multi-Region Failover (If Required)                                                                                           
+                                                                                                                                
+  - Replicate all infrastructure to secondary region using IaC                                                                  
+  - Configure Aurora Global Database failover procedure                                                                         
+  - Set up ElastiCache Global Datastore cross-region sync                                                                       
+  - Add secondary region endpoints to Global Accelerator                                                                        
+  - Configure Route53 failover routing between regions                                                                          
+  - Document and test failover procedures                                                                                       
+  - Set up runbooks for manual failover steps                                                                                   
+                                                                                                                                
+  Optional Components                                                                                                           
+                                                                                                                                
+  - Create CloudFront distribution for edge caching                                                                             
+  - Attach WAF to CloudFront                                                                                                    
+  - Create Lambda functions for optional serverless backend                                                                     
+  - Configure VPC endpoints for AWS services (S3, Secrets Manager, etc.)                                                        
+  - Set up AWS Backup for centralized backup management                                                                         
+                                                                                                                                
+  ---                                                                                                                           
+  Task Summary                                                                                                                  
+                                                                                                                                
+  Core Infrastructure                                                                                                           
+  - Networking: 6 tasks                                                                                                         
+  - ALB: 8 tasks                                                                                                                
+  - EKS: 8 tasks                                                                                                                
+  - Spring Cloud Gateway: 8 tasks                                                                                               
+  - Database: 6 tasks                                                                                                           
+  - Caching: 5 tasks                                                                                                            
+  - DNS: 4 tasks                                                                                                                
+  - Global Accelerator: 5 tasks                                                                                                 
+  - Security/IAM: 7 tasks                                                                                                       
+  - Monitoring: 11 tasks                                                                                                        
+  - Multi-Region DR: 7 tasks                                                                                                    
+  - Optional: 5 tasks                                                                                                           
+                                                                                                                                
+  Total: ~80 tasks     
