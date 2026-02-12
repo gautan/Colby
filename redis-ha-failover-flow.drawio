@@ -1,0 +1,204 @@
+<mxfile host="app.diagrams.net" modified="2026-02-11T00:00:00.000Z" agent="Claude" version="24.0.0" type="device">
+  <diagram id="redis-ha-failover" name="Redis HA Failover Flow">
+    <mxGraphModel dx="1100" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="1500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== TITLE ===== -->
+        <mxCell id="title" value="Redis HA — Lambda Health Check &amp; Failover Flow" style="text;html=1;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="150" y="15" width="500" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- ===== LAMBDA TRIGGER ===== -->
+        <mxCell id="trigger" value="EventBridge Rule&#xa;(every 30s)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;rounded=1;whiteSpace=wrap;fillColor=#E7157B;fontColor=#FFFFFF;strokeColor=#E7157B;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelBackgroundColor=none;" vertex="1" parent="1">
+          <mxGeometry x="370" y="60" width="48" height="48" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lambda" value="Lambda Function&#xa;redis-health-check" style="rounded=1;whiteSpace=wrap;fillColor=#FF9900;strokeColor=#CC7A00;fontSize=12;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="295" y="145" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Trigger → Lambda -->
+        <mxCell id="a01" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="trigger" target="lambda" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CONNECT TO REDIS ===== -->
+        <mxCell id="connect" value="Connect to ElastiCache&#xa;Primary Endpoint" style="rounded=1;whiteSpace=wrap;fillColor=#C7131F;strokeColor=#A01018;fontSize=11;fontStyle=0;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="305" y="225" width="180" height="42" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a12" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="lambda" target="connect" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== PING ===== -->
+        <mxCell id="ping" value="Run redis-cli PING" style="rounded=1;whiteSpace=wrap;fillColor=#C7131F;strokeColor=#A01018;fontSize=11;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="320" y="300" width="150" height="36" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a23" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="connect" target="ping" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== DECISION: PONG? ===== -->
+        <mxCell id="decision" value="PONG?" style="rhombus;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="355" y="370" width="80" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a34" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="ping" target="decision" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== YES PATH (Healthy) ===== -->
+        <mxCell id="healthy-metric" value="Publish metric&#xa;HealthCheckStatus = 1&#xa;(healthy)" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="375" width="170" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-yes" value="YES" style="endArrow=block;endFill=1;strokeColor=#82b366;fontColor=#82b366;fontStyle=1;fontSize=10;" edge="1" source="decision" target="healthy-metric" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== NO PATH (Unhealthy) ===== -->
+        <mxCell id="promote" value="Promote secondary&#xa;to primary&#xa;(aws elasticache&#xa;failover-global-&#xa;replication-group)" style="rounded=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="365" width="170" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-no" value="NO" style="endArrow=block;endFill=1;strokeColor=#b85450;fontColor=#b85450;fontStyle=1;fontSize=10;" edge="1" source="decision" target="promote" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="unhealthy-metric" value="Publish metric&#xa;HealthCheckStatus = 0&#xa;(unhealthy)" style="rounded=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="480" width="170" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-promote-metric" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="promote" target="unhealthy-metric" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== MERGE: CloudWatch ===== -->
+        <mxCell id="cw-namespace" value="CloudWatch Custom Metric&#xa;Namespace: Custom/Redis&#xa;Metric: HealthCheckStatus" style="shape=mxgraph.flowchart.document;whiteSpace=wrap;fillColor=#232F3E;strokeColor=#232F3E;fontSize=11;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="285" y="580" width="220" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Healthy → CW -->
+        <mxCell id="a-h-cw" style="endArrow=block;endFill=1;strokeColor=#82b366;" edge="1" source="healthy-metric" target="cw-namespace" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Unhealthy → CW -->
+        <mxCell id="a-u-cw" style="endArrow=block;endFill=1;strokeColor=#b85450;" edge="1" source="unhealthy-metric" target="cw-namespace" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== SEPARATOR ===== -->
+        <mxCell id="sep1" value="" style="shape=line;strokeColor=#CCCCCC;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="680" width="700" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sep1-label" value="▼  AWS evaluates independently  ▼" style="text;fontSize=9;fontColor=#AAAAAA;fontStyle=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="275" y="668" width="240" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CLOUDWATCH ALARM ===== -->
+        <mxCell id="cw-alarm" value="CloudWatch Alarm&#xa;redis-primary-unhealthy&#xa;&#xa;Threshold: metric &lt; 1&#xa;for 2 consecutive periods (60s each)" style="rounded=1;whiteSpace=wrap;fillColor=#232F3E;strokeColor=#FF9900;fontSize=11;fontColor=#FFFFFF;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="710" width="260" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-cw-alarm" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="cw-namespace" target="cw-alarm" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ALARM STATE DECISION ===== -->
+        <mxCell id="alarm-decision" value="Alarm&#xa;state?" style="rhombus;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="355" y="830" width="80" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-alarm-dec" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="cw-alarm" target="alarm-decision" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- OK → No action -->
+        <mxCell id="no-action" value="No action&#xa;(primary healthy)" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="510" y="840" width="140" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="a-ok" value="OK" style="endArrow=block;endFill=1;strokeColor=#82b366;fontColor=#82b366;fontStyle=1;fontSize=10;" edge="1" source="alarm-decision" target="no-action" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ALARM → Route53 HC -->
+        <mxCell id="r53-hc" value="Route 53 Health Check&#xa;(type: CLOUDWATCH_METRIC)&#xa;&#xa;Status: Unhealthy" style="rounded=1;whiteSpace=wrap;fillColor=#146EB4;strokeColor=#0E4D7B;fontSize=11;fontColor=#FFFFFF;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="120" y="920" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-alarm" value="ALARM" style="endArrow=block;endFill=1;strokeColor=#b85450;fontColor=#b85450;fontStyle=1;fontSize=10;" edge="1" source="alarm-decision" target="r53-hc" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ROUTE 53 FAILOVER ===== -->
+        <mxCell id="r53-failover" value="Route 53 Failover Record&#xa;redis.internal" style="rounded=1;whiteSpace=wrap;fillColor=#146EB4;strokeColor=#0E4D7B;fontSize=12;fontColor=#FFFFFF;fontStyle=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="135" y="1035" width="190" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-r53-fo" style="endArrow=block;endFill=1;strokeColor=#333333;" edge="1" source="r53-hc" target="r53-failover" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== TWO ENDPOINTS ===== -->
+        <mxCell id="primary-ep" value="PRIMARY record&#xa;redis-primary.*.cache.amazonaws.com&#xa;&#xa;❌ Health check FAILING" style="rounded=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1125" width="230" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="secondary-ep" value="SECONDARY record&#xa;redis-secondary.*.cache.amazonaws.com&#xa;&#xa;✅ DNS now resolves here" style="rounded=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="1125" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Failover → endpoints -->
+        <mxCell id="a-fo-pri" value="TTL 10s" style="endArrow=block;endFill=1;dashed=1;strokeColor=#b85450;fontColor=#b85450;fontSize=9;" edge="1" source="r53-failover" target="primary-ep" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a-fo-sec" value="failover" style="endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=2;fontColor=#82b366;fontSize=10;fontStyle=1;" edge="1" source="r53-failover" target="secondary-ep" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== APP CONNECTS ===== -->
+        <mxCell id="app" value="Application connects to&#xa;redis.internal:6379&#xa;→ now routed to secondary (us-west-2)" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="1230" width="270" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-sec-app" style="endArrow=block;endFill=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="secondary-ep" target="app" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ===== TIMING ANNOTATIONS ===== -->
+        <mxCell id="t1" value="T+0" style="text;fontSize=9;fontColor=#FF9900;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="710" y="145" width="40" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="t1-line" value="" style="shape=line;strokeColor=#FF9900;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="163" width="210" height="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="t2" value="T+30s" style="text;fontSize=9;fontColor=#FF9900;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="710" y="375" width="50" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="t2-line" value="" style="shape=line;strokeColor=#FF9900;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="675" y="383" width="35" height="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="t3" value="T+~2min" style="text;fontSize=9;fontColor=#FF9900;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="710" y="740" width="60" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="t3-line" value="" style="shape=line;strokeColor=#FF9900;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="530" y="748" width="180" height="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="t4" value="T+~2.5min" style="text;fontSize=9;fontColor=#FF9900;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="710" y="1050" width="70" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="t4-line" value="" style="shape=line;strokeColor=#FF9900;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1058" width="380" height="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
