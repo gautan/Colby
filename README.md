@@ -663,3 +663,28 @@ resource "aws_lambda_permission" "allow_eventbridge" {
   source_arn    = aws_cloudwatch_event_rule.redis_health_check.arn
 }
 ```
+has nginx sitting inside the EKS cluster at the app tier as a reverse proxy. Currently, there is no nginx component in this codebase. We need to
+ add:
+ 1. An nginx-config-api — REST API server (Express + SQLite) for managing nginx configuration (upstreams, routes, rate limits, headers, TLS, load balancing)
+ 2. An nginx container with a config-agent — nginx pulls config from the API on a schedule, validates with nginx -t, and hot-reloads via nginx -s reload (zero-downtime)
+ 3. Docker + Helm chart deployment for EKS
+
+ Pull-based model: nginx calls the API and updates itself. No sidecar needed.
+ 
+  Ping Agent for NGINX is a commercial product from Ping Identity that:
+
+  1. Integrates NGINX with PingAccess/PingFederate — it's a plugin (dynamic module) that sits inside nginx and intercepts every request
+  2. Policy enforcement — before nginx routes a request to the backend, the agent calls the PingAccess Policy Server to check if the user/request is authorized
+  3. SSO / Token validation — validates OAuth tokens, SAML assertions, or session cookies against the Ping Identity platform
+  4. Header injection — after authorization, injects identity headers (user ID, roles, entitlements) into the request before forwarding to the backend
+  5. Centralized access control — all authorization decisions are made by the PingAccess server, not by each backend service individually
+
+  How it works in the request flow:
+
+  User → NGINX (with Ping Agent module)
+           │
+           ├─► Ping Agent intercepts request
+           ├─► Calls PingAccess Policy Server: "Is this user allowed?"
+           ├─► PingAccess returns: allow/deny + identity attributes
+           ├─► If allowed: injects headers, forwards to backend
+           └─► If denied: returns 401/403 to user
