@@ -18,3 +18,7 @@ Every Lambda cold start logs an Init Duration in the REPORT line:
           pct(@initDuration, 95) as p95ColdStart
     by bin(1h)
   | sort by bin desc
+filter @type = "REPORT" and @initDuration > 0
+  | fields @timestamp, @initDuration, @duration, @memorySize, @maxMemoryUsed
+  | sort @timestamp desc
+  | limit 20
