@@ -1,0 +1,20 @@
+Every Lambda cold start logs an Init Duration in the REPORT line:                                                                                                                                             
+                                                                                                                                                                                                                
+  REPORT RequestId: abc123 Duration: 45.12 ms  Billed Duration: 100 ms  Memory Size: 256 MB  Max Memory Used: 89 MB  Init Duration: 234.56 ms                                                                 
+                                                                                                                                                                                                                
+  Init Duration only appears on cold starts. Filter for it:                                                                                                                                                     
+                                                                                                                                                                                                                
+  aws logs filter-log-events \                                                                                                                                                                                  
+    --log-group-name /aws/lambda/bl-email-lambda \
+    --filter-pattern "Init Duration" \
+    --start-time $(date -d '24 hours ago' +%s000)
+
+  2. CloudWatch Insights (aggregate analysis)
+
+  filter @type = "REPORT"
+  | stats count(*) as coldStarts,
+          avg(@initDuration) as avgColdStart,
+          max(@initDuration) as maxColdStart,
+          pct(@initDuration, 95) as p95ColdStart
+    by bin(1h)
+  | sort by bin desc
